@@ -1,0 +1,5 @@
+XML schemas are very powerful
+Cross-referencing within/between documents is possible
+Can define attributes in a parent node which change parsing/validation for child nodes (this simplifies extensions for new model types)
+
+Very verbose - does it pass the laugh test?
