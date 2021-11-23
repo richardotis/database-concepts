@@ -1,0 +1,66 @@
+/*
+* This is some information about this database.
+* Comments are allowed!
+*
+* PARAMETERS ARE TAKEN FROM 
+* Reevaluation of the Al-Zn System,
+* Sabine an Mey, Z.Metallkd., 84 (1993) 451-455.
+*/
+Element::AL
+Element::ZN
+
+Function::{
+    GHSERAL:(
+        (298.15 <= T < 700) '-7976.15+137.0715*T-24.36720*T*LN(T)-1.884662E-3*T**2-0.877664E-6*T**3+74092*T**(-1)'
+        (700 <= T < 933.6)  '-11276.24+223.0269*T-38.58443*T*LN(T)+18.531982E-3*T**2-5.764227E-6*T**3+74092*T**(-1)'
+        (933.6 <= T < 2900) '-11277.68+188.6620*T-31.74819*T*LN(T)-1234.26E25*T**(-9)'
+    ),
+    GALLIQ:(
+        (298 <= T < 700) '+3029.403+125.2307*T-24.36720*T*LN(T)-1.884662E-3*T**2-0.877664E-6*T**3+74092*T**(-1)+79.401E-21*T**7'
+        (700 <= T < 933.6)  '-270.6860+211.1861*T-38.58443*T*LN(T)+18.53198E-3*T**2-5.764227E-6*T**3+74092*T**(-1)+79.401E-21*T**7'
+        (933.6 <= T < 2900) '-795.7090+177.4100*T-31.74819*T*LN(T)'
+    ),
+    GALHCP:(
+        (298 <= T < 6000) 'GHSERAL+5481-1.8*T'
+    ),
+    GHSERZN:(
+        (298 <= T < 692.7) '-7285.787+118.4693*T-23.70131*T*LN(T)-.001712034*T**2-1.264963E-06*T**3'
+        (692.7 <= T < 1700) '-11070.60+172.3449*T-31.38*T*LN(T)+4.70657E+26*T**(-9)'
+    ),
+    GZNLIQ:(
+        (298.14 <= T < 692.7) 'GHSERZN + 7157.213-10.29299*T-3.5896E-19*T**7'
+        (692.7 <= T < 1700) 'GHSERZN + 7450.168-10.737066*T-4.7051E+26*T**(-9)'
+    ),
+    GZNFCC:(
+        (298.15 <= T < 1700) ref1::'GHSERZN +2969.82-1.56968*T'
+    ),
+}
+
+Phase::{
+    LIQUID: CEF::{sites: (1), constituents:((AL ZN))},
+    FCC_A1: CEF::{sites: (1), constituents:((AL ZN))},
+    HCP_A3: CEF::{sites: (1), constituents:((AL ZN))},
+}
+
+Parameter::[
+    Z::LIQUID::(quadruplet::((A B) (X Y)) {A:6.0, B:6.0, X:6.0, Y:VV0014}),
+    Z::LIQUID::(quadruplet::((A C) (X Y)) {A:3.0, B:3.0, X:6.0, Y:6.0}),
+    G::LIQUID::((interaction::((AL)) order::0) ((298.15 <= T < 2900) GALLIQ)),
+    G::LIQUID::((((ZN)) order::0) ((298.15 <= T < 1700) GZNLIQ)),
+    G::LIQUID::((((AL ZN)) order::0) ((298.15 <= T < 6000) '10465.5-3.39259*T')),
+    // Now the fcc parameters
+    G::FCC_A1::((((AL)) order::0) ((298.15 <= T < 2900) GHSERAL)),
+    G::FCC_A1::((((ZN)) order::0) ((298.15 <= T < 1700) GZNFCC)),
+    G::FCC_A1::((((AL ZN)) order::0) ((298.15 <= T < 6000) '+7297.5+0.47512*T')),
+    G::FCC_A1::((((AL ZN)) order::1) ((298.15 <= T < 6000) '6612.9-4.5911*T')),
+    G::FCC_A1::((((AL ZN)) order::2) ((298.15 <= T < 6000) '-3097.2+3.30635*T')),
+    // hcp
+    G::HCP_A3::((((AL)) order::0) ((298.15 <= T < 2900) GALHCP)),
+    G::HCP_A3::((((ZN)) order::0) ((298.15 <= T < 1700) GHSERZN)),
+    G::HCP_A3::((((AL ZN)) order::0) ((298.15 <= T < 6000) '+18821.0-8.95255*T')),
+    G::HCP_A3::((((AL ZN)) order::3) ((298.15 <= T < 6000) '-702.8')),
+]
+
+Reference::{
+    ref1: 'This is an example of how we could handle references',
+}
