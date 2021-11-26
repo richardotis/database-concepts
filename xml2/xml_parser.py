@@ -1,19 +1,7 @@
 from pycalphad.io.tdb import _sympify_string
-from pycalphad import variables as v
+from pycalphad import Database, variables as v
 from sympy import Piecewise, And, Symbol
 from lxml import etree
-
-parser = etree.XMLParser(load_dtd=False,
-                         no_network=True)
-
-tree = etree.parse("experiment3.xml", parser=parser)
-
-root = tree.getroot()
-
-elements = []
-phases = []
-all_parameters = []
-symbols = {}
 
 
 def convert_math_to_symbolic(math_nodes):
@@ -57,34 +45,56 @@ def parse_parameter(param_node):
     return int_order, constituent_array
 
 
-def parse_model(phase_name, model_node, parameters):
+def parse_model(dbf, phase_name, model_node, parameters):
     site_ratios = [float(m) for m in model_node.xpath('./ConstituentArray/Site/@ratio')]
     sublattice_model = [s.xpath('./Constituent/@refid') for s in model_node.xpath('./ConstituentArray/Site')]
-    print(phase_name, site_ratios, sublattice_model)
+
+    model_hints = {}  # TODO
+    dbf.add_structure_entry(phase_name, phase_name)
+    dbf.add_phase(phase_name, model_hints, site_ratios)
+    dbf.add_phase_constituents(phase_name, sublattice_model)
+
     for param_node in parameters:
         int_order, constituent_array = parse_parameter(param_node)
         param_nodes = param_node.xpath('./Expr/@refid') + [''.join(param_node.xpath('./text()')).strip()]
-        param_nodes = convert_math_to_symbolic(param_nodes)
-        all_parameters.append((phase_name, param_node.attrib['type'], constituent_array, int_order, param_nodes))
+        function_obj = convert_math_to_symbolic(param_nodes)
+        param_type = param_node.attrib['type']
+        ref = None  # TODO
+        diffusing_species = None  # TODO
+        dbf.add_parameter(param_type, phase_name,
+                          [[str(c) for c in sorted(lx)] for lx in constituent_array],
+                          int_order, function_obj, ref, diffusing_species, force_insert=False)
 
 
-for child in root:
-    if child.tag == 'Element':
-        elements.append(child.attrib['id'])
-    elif child.tag == 'Expr':
-        symbols[child.attrib['id']] = convert_intervals_to_piecewise(child)
-    elif child.tag == 'Phase':
-        model_node = child.xpath('./Model')[0]
-        if model_node.attrib['type'] != 'CEF':
-            continue
-        phase_name = child.attrib['id']
-        parameters = child.xpath('./Parameter')
-        phases.append(phase_name)
-        parse_model(phase_name, model_node, parameters)
+def _setitem_raise_duplicates(dictionary, key, value):
+    if key in dictionary:
+        raise ValueError("Database contains duplicate FUNCTION {}".format(key))
+    dictionary[key] = value
 
-print('Elements:', elements)
-print('Symbols: ', symbols)
-print('Phases: ', phases)
-print('Parameters: ', all_parameters)
 
-#etree.dump(tree.getroot())
+def read_xml(dbf, fd):
+    parser = etree.XMLParser(load_dtd=False,
+                             no_network=True)
+    tree = etree.parse(fd, parser=parser)
+    root = tree.getroot()
+
+    for child in root:
+        if child.tag == 'ChemicalElement':
+            element = str(child.attrib['id'])
+            dbf.species.add(v.Species(element, {element: 1.0}, charge=0))
+            dbf.elements.add(element)
+        elif child.tag == 'Expr':
+            function_name = str(child.attrib['id'])
+            function_obj = convert_intervals_to_piecewise(child)
+            _setitem_raise_duplicates(dbf.symbols, function_name, function_obj)
+        elif child.tag == 'Phase':
+            model_node = child.xpath('./Model')[0]
+            if model_node.attrib['type'] != 'CEF':
+                continue
+            phase_name = child.attrib['id']
+            parameters = child.xpath('./Parameter')
+            parse_model(dbf, phase_name, model_node, parameters)
+    dbf.process_parameter_queue()
+
+
+Database.register_format("xml", read=read_xml, write=None)

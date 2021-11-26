@@ -1,6 +1,6 @@
 <Database>
-    <Element id="AL" />
-    <Element id="ZN" />
+    <ChemicalElement id="AL" />
+    <ChemicalElement id="ZN" />
     <Variable id="VV0001"/>
 
     <Expr id="GHSERAL">
