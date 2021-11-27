@@ -26,7 +26,7 @@ def convert_intervals_to_piecewise(interval_nodes):
         lower = float(interval_node.attrib['lower'])
         upper = float(interval_node.attrib['upper'])
         math_expr = convert_math_to_symbolic(interval_node.xpath('./Expr/@refid') + \
-                                             [''.join((interval_node.text or '').replace('\n', '').strip())])
+                                             [''.join(interval_node.itertext()).replace('\n', '').replace(' ', '').strip()])
         cond = And(lower <= getattr(v, variable, Symbol(variable)), upper > getattr(v, variable))
         conds.append(cond)
         exprs.append(math_expr)
