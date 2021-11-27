@@ -60,9 +60,9 @@ def convert_symbolic_to_nodes(sym, symbol_names=None):
             arguments = [x for x in sym.args if str(x) not in symbol_names]
             symbols = [objectify.Element("Expr", refid=str(x)) for x in sym.args if str(x) in symbol_names]
             nodes.extend(symbols)
-            str_node = str(sum(arguments))
+            str_node = str(sum(arguments)).replace('log(', 'ln(')
         else:
-            str_node = str(sym)
+            str_node = str(sym).replace('log(', 'ln(')
         if str_node in symbol_names:
             nodes.append(objectify.Element("Expr", refid=str_node))
         else:
