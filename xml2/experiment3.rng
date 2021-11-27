@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar ns="" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+    <start>
+        <element name="Database">
+            <oneOrMore>
+                <element name="ChemicalElement">
+                    <attribute name="id">
+                        <data type="NCName"/>
+                    </attribute>
+                </element>
+            </oneOrMore>
+            <element name="Variable">
+                <attribute name="id">
+                    <data type="NCName"/>
+                </attribute>
+            </element>
+            <oneOrMore>
+                <ref name="Expr"/>
+            </oneOrMore>
+            <oneOrMore>
+                <element name="Phase">
+                    <attribute name="id">
+                        <data type="NCName"/>
+                    </attribute>
+                    <element name="Model">
+                        <choice>
+                            <group>
+                                <attribute name="type">
+                                    <value>CEF</value>
+                                </attribute>
+                                <ref name="CEFConstituentArray"/>
+                            </group>
+                            <group>
+                                <attribute name="type">
+                                    <value>MQMQA</value>
+                                </attribute>
+                            </group>
+                        </choice>
+                    </element>
+                    <oneOrMore>
+                        <element name="Parameter">
+                            <attribute name="type">
+                                <data type="NCName"/>
+                            </attribute>
+                            <oneOrMore>
+                                <choice>
+                                    <text/>
+                                    <ref name="CEFConstituentArray"/>
+                                    <ref name="Expr"/>
+                                    <element name="Exponents">
+                                        <empty/>
+                                    </element>
+                                    <element name="Order">
+                                        <data type="integer"/>
+                                    </element>
+                                </choice>
+                            </oneOrMore>
+                        </element>
+                    </oneOrMore>
+                </element>
+            </oneOrMore>
+        </element>
+    </start>
+    <define name="Expr">
+        <element name="Expr">
+            <optional>
+                <attribute name="id">
+                    <data type="NCName"/>
+                </attribute>
+            </optional>
+            <optional>
+                <attribute name="refid">
+                    <data type="NCName"/>
+                </attribute>
+            </optional>
+            <zeroOrMore>
+                <element name="Interval">
+                    <attribute name="in">
+                        <data type="NCName"/>
+                    </attribute>
+                    <attribute name="lower">
+                        <data type="decimal"/>
+                    </attribute>
+                    <attribute name="upper">
+                        <data type="decimal"/>
+                    </attribute>
+                    <oneOrMore>
+                        <choice>
+                            <text/>
+                            <ref name="Expr"/>
+                        </choice>
+                    </oneOrMore>
+                </element>
+            </zeroOrMore>
+        </element>
+    </define>
+    <define name="CEFConstituentArray">
+        <element name="ConstituentArray">
+            <optional>
+                <element name="Site">
+                    <optional>
+                        <attribute name="id">
+                            <data type="integer"/>
+                        </attribute>
+                    </optional>
+                    <optional>
+                        <attribute name="ratio">
+                            <data type="integer"/>
+                        </attribute>
+                    </optional>
+                    <optional>
+                        <attribute name="refid">
+                            <data type="integer"/>
+                        </attribute>
+                    </optional>
+                    <oneOrMore>
+                        <element name="Constituent">
+                            <attribute name="refid">
+                                <data type="NCName"/>
+                            </attribute>
+                        </element>
+                    </oneOrMore>
+                </element>
+            </optional>
+        </element>
+    </define>
+    <define name="MQMConstituentArray">
+        <element name="ConstituentArray">
+            <empty/>
+        </element>
+    </define>
+</grammar>
