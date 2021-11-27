@@ -163,7 +163,7 @@ def write_xml(dbf, fd):
             subl_idx = 0
             for site_ratio, constituents in zip(phase_obj.sublattices, phase_obj.constituents):
                 site_node = objectify.SubElement(constit_array_node, "Site", id=str(subl_idx), ratio=str(site_ratio))
-                for constituent in constituents:
+                for constituent in sorted(constituents, key=str):
                     objectify.SubElement(site_node, "Constituent", refid=str(constituent))
                 subl_idx += 1
     for param in dbf._parameters.all():
