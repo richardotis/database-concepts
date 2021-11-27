@@ -1,4 +1,4 @@
-from pycalphad.io.tdb import _sympify_string
+from pycalphad.io.tdb import _sympify_string, to_interval
 from pycalphad import Database, variables as v
 from sympy import Piecewise, And, Symbol
 from lxml import etree, objectify
@@ -38,8 +38,9 @@ def convert_symbolic_to_nodes(sym, symbol_names=None):
     nodes = []
     if isinstance(sym, Piecewise):
         for expr, cond in sym.args:
-            lower = ""
-            upper = ""
+            interval = to_interval(cond)
+            lower = str(float(interval.start))
+            upper = str(float(interval.end))
             interval_node = etree.Element("Interval", attrib={"in": "T", "lower": lower, "upper": upper})
             converted_expr_nodes = convert_symbolic_to_nodes(expr)
             for node in converted_expr_nodes:
