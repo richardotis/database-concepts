@@ -33,8 +33,7 @@ def convert_intervals_to_piecewise(interval_nodes):
     return Piecewise(*(list(zip(exprs, conds)) + [(0, True)]))
 
 
-def convert_symbolic_to_nodes(sym, symbol_names=None):
-    symbol_names = set() if symbol_names is None else symbol_names
+def convert_symbolic_to_nodes(sym):
     nodes = []
     if isinstance(sym, Piecewise):
         for expr, cond in sym.args:
@@ -42,13 +41,10 @@ def convert_symbolic_to_nodes(sym, symbol_names=None):
             lower = str(float(interval.start))
             upper = str(float(interval.end))
             interval_node = etree.Element("Interval", attrib={"in": "T", "lower": lower, "upper": upper})
-            converted_expr_nodes = convert_symbolic_to_nodes(expr, symbol_names=symbol_names)
+            converted_expr_nodes = convert_symbolic_to_nodes(expr)
             for node in converted_expr_nodes:
                 if isinstance(node, str):
-                    if node in symbol_names:
-                        objectify.SubElement(interval_node, "Expr", refid=str(node))
-                    else:
-                        interval_node.text = node
+                    interval_node.text = node
                 else:
                     interval_node.append(node)
             if len(interval_node) == 0 and interval_node.text == '0':
@@ -56,17 +52,8 @@ def convert_symbolic_to_nodes(sym, symbol_names=None):
             nodes.append(interval_node)
 
     else:
-        if isinstance(sym, Add):
-            arguments = [x for x in sym.args if str(x) not in symbol_names]
-            symbols = [objectify.Element("Expr", refid=str(x)) for x in sym.args if str(x) in symbol_names]
-            nodes.extend(symbols)
-            str_node = str(sum(arguments)).replace('log(', 'ln(')
-        else:
-            str_node = str(sym).replace('log(', 'ln(')
-        if str_node in symbol_names:
-            nodes.append(objectify.Element("Expr", refid=str_node))
-        else:
-            nodes.append(str_node)
+        str_node = str(sym).replace('log(', 'ln(')
+        nodes.append(str_node)
     return nodes
 
 
@@ -150,13 +137,10 @@ def write_xml(dbf, fd):
     symbol_names = set(dbf.symbols.keys())
     for name, expr in sorted(dbf.symbols.items()):
         expr_node = objectify.SubElement(root, "Expr", id=str(name))
-        converted_nodes = convert_symbolic_to_nodes(expr, symbol_names=symbol_names)
+        converted_nodes = convert_symbolic_to_nodes(expr)
         for node in converted_nodes:
             if isinstance(node, str):
-                if dbf.symbols.get(node, None) is not None:
-                    objectify.SubElement(expr_node, "Expr", refid=str(node))
-                else:
-                    expr_node.text = node
+                expr_node.text = node
             else:
                 expr_node.append(node)
     for name, phase_obj in sorted(dbf.phases.items()):
@@ -188,13 +172,10 @@ def write_xml(dbf, fd):
             for constituent in constituents:
                 objectify.SubElement(site_node, "Constituent", refid=str(constituent))
             subl_idx += 1
-        nodes = convert_symbolic_to_nodes(param['parameter'], symbol_names=symbol_names)
+        nodes = convert_symbolic_to_nodes(param['parameter'])
         for node in nodes:
             if isinstance(node, str):
-                if dbf.symbols.get(node, None) is not None:
-                    objectify.SubElement(param_node, "Expr", refid=str(node))
-                else:
-                    param_node._setText(node)
+                param_node._setText(node)
             else:
                 param_node.append(node)
         # TODO: param['diffusing_species']
