@@ -44,7 +44,7 @@
             </optional>
         </element>
         <zeroOrMore>
-            <optional>
+            <choice>
                 <element name="Parameter">
                     <attribute name="type">
                         <value>G</value>
@@ -59,8 +59,6 @@
                         </optional>
                     </interleave>
                 </element>
-            </optional>
-            <optional>
                 <element name="Parameter">
                     <attribute name="type">
                         <value>L</value>
@@ -73,7 +71,7 @@
                         </element>
                     </interleave>
                 </element>
-            </optional>
+            </choice>
         </zeroOrMore>
     </define>
 </grammar>

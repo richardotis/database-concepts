@@ -10,6 +10,9 @@
             <attribute name="type">
                 <value>MQMQA</value>
             </attribute>
+            <optional>
+                <text/>
+            </optional>
         </element>
         <zeroOrMore>
             <element name="Parameter">
