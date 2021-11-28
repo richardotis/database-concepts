@@ -100,7 +100,7 @@ def read_xml(dbf, fd):
     parser = etree.XMLParser(load_dtd=False,
                              no_network=True)
     tree = etree.parse(fd, parser=parser)
-    relaxng = etree.RelaxNG(etree.parse('experiment3.rng'))
+    relaxng = etree.RelaxNG(etree.parse('database.rng'))
     if not relaxng.validate(tree):
         print('Validation Error:', relaxng.error_log)
     root = tree.getroot()
