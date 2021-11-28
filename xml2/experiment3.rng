@@ -11,13 +11,6 @@
                     </element>
                 </oneOrMore>
                 <zeroOrMore>
-                    <element name="Variable">
-                        <attribute name="id">
-                            <data type="NCName"/>
-                        </attribute>
-                    </element>
-                </zeroOrMore>
-                <zeroOrMore>
                     <ref name="Expr"/>
                 </zeroOrMore>
                 <oneOrMore>
@@ -31,15 +24,13 @@
                                     <attribute name="type">
                                         <value>CEF</value>
                                     </attribute>
-                                    <interleave>
-                                        <ref name="CEFConstituentArray"/>
-                                        <optional>
-                                            <element name="IHJMagneticModel">
-                                                <attribute name="afm_factor"><data type="double"/></attribute>
-                                                <attribute name="structure_factor"><data type="double"/></attribute>
-                                            </element>
-                                        </optional>
-                                    </interleave>
+                                    <ref name="CEFConstituentArray"/>
+                                    <optional>
+                                        <element name="IHJMagneticModel">
+                                            <attribute name="afm_factor"><data type="double"/></attribute>
+                                            <attribute name="structure_factor"><data type="double"/></attribute>
+                                        </element>
+                                    </optional>
                                 </group>
                                 <group>
                                     <attribute name="type">
@@ -48,26 +39,30 @@
                                 </group>
                             </choice>
                         </element>
-                        <oneOrMore>
+                        <zeroOrMore>
                             <element name="Parameter">
                                 <attribute name="type">
                                     <data type="NCName"/>
                                 </attribute>
-                                <oneOrMore>
+                                <interleave>
+                                    <text/>
                                     <choice>
-                                        <text/>
                                         <ref name="CEFConstituentArray"/>
-                                        <ref name="Expr"/>
+                                        <ref name="MQMConstituentArray"/>
+                                    </choice>
+                                    <optional>
                                         <element name="Exponents">
                                             <empty/>
                                         </element>
+                                    </optional>
+                                    <optional>
                                         <element name="Order">
                                             <data type="integer"/>
                                         </element>
-                                    </choice>
-                                </oneOrMore>
+                                    </optional>
+                                </interleave>
                             </element>
-                        </oneOrMore>
+                        </zeroOrMore>
                     </element>
                 </oneOrMore>
             </interleave>
@@ -77,11 +72,6 @@
         <element name="Expr">
             <optional>
                 <attribute name="id">
-                    <data type="NCName"/>
-                </attribute>
-            </optional>
-            <optional>
-                <attribute name="refid">
                     <data type="NCName"/>
                 </attribute>
             </optional>
@@ -108,7 +98,7 @@
     </define>
     <define name="CEFConstituentArray">
         <element name="ConstituentArray">
-            <optional>
+            <oneOrMore>
                 <element name="Site">
                     <optional>
                         <attribute name="id">
@@ -117,7 +107,7 @@
                     </optional>
                     <optional>
                         <attribute name="ratio">
-                            <data type="integer"/>
+                            <data type="double"/>
                         </attribute>
                     </optional>
                     <optional>
@@ -133,7 +123,7 @@
                         </element>
                     </oneOrMore>
                 </element>
-            </optional>
+            </oneOrMore>
         </element>
     </define>
     <define name="MQMConstituentArray">

@@ -1,7 +1,6 @@
 <Database>
     <ChemicalElement id="AL" />
     <ChemicalElement id="ZN" />
-    <Variable id="VV0001"/>
 
     <Expr id="GHSERAL">
         <Interval in="T" lower="298.15" upper="700">
@@ -29,8 +28,7 @@
     </Expr>
     <Expr id="GALHCP">
         <Interval in="T" lower="298" upper="6000">
-            <Expr refid="GHSERAL" />
-            +5481-1.8*T
+            GHSERAL+5481-1.8*T
         </Interval>
     </Expr>
     <Expr id="GHSERZN">
@@ -41,11 +39,11 @@
         <Interval in="T" lower="692.7" upper="1700">-11070.60+172.3449*T-31.38*T*LN(T)+4.70657E+26*T**(-9)</Interval>
     </Expr>
     <Expr id="GZNLIQ">
-        <Interval in="T" lower="298.14" upper="692.7"><Expr refid="GHSERZN"/>+7157.213-10.29299*T-3.5896E-19*T**7</Interval>
-        <Interval in="T" lower="692.7" upper="1700"><Expr refid="GHSERZN"/>+7450.168-10.737066*T-4.7051E+26*T**(-9)</Interval>
+        <Interval in="T" lower="298.14" upper="692.7">GHSERZN+7157.213-10.29299*T-3.5896E-19*T**7</Interval>
+        <Interval in="T" lower="692.7" upper="1700">GHSERZN+7450.168-10.737066*T-4.7051E+26*T**(-9)</Interval>
     </Expr>
     <Expr id="GZNFCC">
-        <Interval in="T" lower="298.15" upper="1700"><Expr refid="GHSERZN"/> +2969.82-1.56968*T </Interval>
+        <Interval in="T" lower="298.15" upper="1700">GHSERZN+2969.82-1.56968*T </Interval>
     </Expr>
 
     <Phase id="LIQUID">
@@ -58,13 +56,13 @@
             <ConstituentArray>
                 <Site refid="0"><Constituent refid="AL"/></Site>
             </ConstituentArray>
-            <Expr refid="GALLIQ"/>
+            GALLIQ
         </Parameter>
         <Parameter type="G">
             <ConstituentArray>
                 <Site refid="0"><Constituent refid="ZN"/></Site>
             </ConstituentArray>
-            <Expr refid="GZNLIQ"/>
+            GZNLIQ
         </Parameter>
         <Parameter type="L">
             <Order>0</Order>
@@ -85,13 +83,13 @@
             <ConstituentArray>
                 <Site refid="0"><Constituent refid="AL"/></Site>
             </ConstituentArray>
-            <Expr refid="GHSERAL"/>
+            GHSERAL
         </Parameter>
         <Parameter type="G">
             <ConstituentArray>
                 <Site refid="0"><Constituent refid="ZN"/></Site>
             </ConstituentArray>
-            <Expr refid="GZNFCC"/>
+            GZNFCC
         </Parameter>
         <Parameter type="L">
             <Order>0</Order>
@@ -125,13 +123,13 @@
             <ConstituentArray>
                 <Site refid="0"><Constituent refid="AL"/></Site>
             </ConstituentArray>
-            <Expr refid="GALHCP"/>
+            GALHCP
         </Parameter>
         <Parameter type="G">
             <ConstituentArray>
                 <Site refid="0"><Constituent refid="ZN"/></Site>
             </ConstituentArray>
-            <Expr refid="GHSERZN"/>
+            GHSERZN
         </Parameter>
         <Parameter type="L">
             <Order>0</Order>
@@ -157,7 +155,7 @@
                 <!-- TODO -->
             </ConstituentArray>
             <Exponents><!-- TODO --></Exponents>
-            <Expr refid="VV0001"/>
+            VV0001
         </Parameter>
     </Phase>
 </Database>
