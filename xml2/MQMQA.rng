@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar ns="" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+    <define name="MQMConstituentArray">
+        <element name="ConstituentArray">
+            <empty/>
+        </element>
+    </define>
+    <define name="MQMQA.model" combine="choice">
+        <element name="Model">
+            <attribute name="type">
+                <value>MQMQA</value>
+            </attribute>
+        </element>
+        <zeroOrMore>
+            <element name="Parameter">
+                <attribute name="type">
+                    <value>Q</value>
+                </attribute>
+                <interleave>
+                    <text/>
+                    <ref name="MQMConstituentArray"/>
+                    <element name="Exponents">
+                        <empty/>
+                    </element>
+                </interleave>
+            </element>
+        </zeroOrMore>
+    </define>
+</grammar>

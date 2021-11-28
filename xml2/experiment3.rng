@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <grammar ns="" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+    <include href="CEF.rng"/>
+    <include href="MQMQA.rng"/>
     <start>
         <element name="Database">
             <interleave>
@@ -18,71 +20,10 @@
                         <attribute name="id">
                             <data type="NCName"/>
                         </attribute>
-                        <element name="Model">
-                            <choice>
-                                <group>
-                                    <attribute name="type">
-                                        <value>CEF</value>
-                                    </attribute>
-                                    <ref name="CEFConstituentArray"/>
-                                    <optional>
-                                        <element name="IHJMagneticModel">
-                                            <attribute name="afm_factor"><data type="double"/></attribute>
-                                            <attribute name="structure_factor"><data type="double"/></attribute>
-                                        </element>
-                                    </optional>
-                                </group>
-                                <group>
-                                    <attribute name="type">
-                                        <value>MQMQA</value>
-                                    </attribute>
-                                </group>
-                            </choice>
-                        </element>
-                        <zeroOrMore>
-                            <element name="Parameter">
-                                <choice>
-                                    <group>
-                                        <attribute name="type">
-                                            <value>G</value>
-                                        </attribute>
-                                        <interleave>
-                                            <text/>
-                                            <ref name="CEFConstituentArray"/>
-                                            <optional>
-                                                <element name="Order">
-                                                    <value>0</value>
-                                                </element>
-                                            </optional>
-                                        </interleave>
-                                    </group>
-                                    <group>
-                                        <attribute name="type">
-                                            <value>L</value>
-                                        </attribute>
-                                        <interleave>
-                                            <text/>
-                                            <ref name="CEFConstituentArray"/>
-                                            <element name="Order">
-                                                <data type="integer"/>
-                                            </element>
-                                        </interleave>
-                                    </group>
-                                    <group>
-                                        <attribute name="type">
-                                            <value>Q</value>
-                                        </attribute>
-                                        <interleave>
-                                            <text/>
-                                            <ref name="MQMConstituentArray"/>
-                                            <element name="Exponents">
-                                                <empty/>
-                                            </element>
-                                        </interleave>
-                                    </group>
-                                </choice>
-                            </element>
-                        </zeroOrMore>
+                        <choice>
+                            <ref name="CEF.model"/>
+                            <ref name="MQMQA.model"/>
+                        </choice>
                     </element>
                 </oneOrMore>
             </interleave>
@@ -114,41 +55,6 @@
                     </oneOrMore>
                 </element>
             </zeroOrMore>
-        </element>
-    </define>
-    <define name="CEFConstituentArray">
-        <element name="ConstituentArray">
-            <oneOrMore>
-                <element name="Site">
-                    <optional>
-                        <attribute name="id">
-                            <data type="integer"/>
-                        </attribute>
-                    </optional>
-                    <optional>
-                        <attribute name="ratio">
-                            <data type="double"/>
-                        </attribute>
-                    </optional>
-                    <optional>
-                        <attribute name="refid">
-                            <data type="integer"/>
-                        </attribute>
-                    </optional>
-                    <oneOrMore>
-                        <element name="Constituent">
-                            <attribute name="refid">
-                                <data type="NCName"/>
-                            </attribute>
-                        </element>
-                    </oneOrMore>
-                </element>
-            </oneOrMore>
-        </element>
-    </define>
-    <define name="MQMConstituentArray">
-        <element name="ConstituentArray">
-            <empty/>
         </element>
     </define>
 </grammar>
