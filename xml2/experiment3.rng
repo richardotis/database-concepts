@@ -41,26 +41,46 @@
                         </element>
                         <zeroOrMore>
                             <element name="Parameter">
-                                <attribute name="type">
-                                    <data type="NCName"/>
-                                </attribute>
-                                <interleave>
-                                    <text/>
-                                    <choice>
-                                        <ref name="CEFConstituentArray"/>
-                                        <ref name="MQMConstituentArray"/>
-                                    </choice>
-                                    <optional>
-                                        <element name="Exponents">
-                                            <empty/>
-                                        </element>
-                                    </optional>
-                                    <optional>
-                                        <element name="Order">
-                                            <data type="integer"/>
-                                        </element>
-                                    </optional>
-                                </interleave>
+                                <choice>
+                                    <group>
+                                        <attribute name="type">
+                                            <value>G</value>
+                                        </attribute>
+                                        <interleave>
+                                            <text/>
+                                            <ref name="CEFConstituentArray"/>
+                                            <optional>
+                                                <element name="Order">
+                                                    <value>0</value>
+                                                </element>
+                                            </optional>
+                                        </interleave>
+                                    </group>
+                                    <group>
+                                        <attribute name="type">
+                                            <value>L</value>
+                                        </attribute>
+                                        <interleave>
+                                            <text/>
+                                            <ref name="CEFConstituentArray"/>
+                                            <element name="Order">
+                                                <data type="integer"/>
+                                            </element>
+                                        </interleave>
+                                    </group>
+                                    <group>
+                                        <attribute name="type">
+                                            <value>Q</value>
+                                        </attribute>
+                                        <interleave>
+                                            <text/>
+                                            <ref name="MQMConstituentArray"/>
+                                            <element name="Exponents">
+                                                <empty/>
+                                            </element>
+                                        </interleave>
+                                    </group>
+                                </choice>
                             </element>
                         </zeroOrMore>
                     </element>
