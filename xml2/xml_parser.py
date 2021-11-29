@@ -25,12 +25,13 @@ def convert_intervals_to_piecewise(interval_nodes):
         variable = interval_node.attrib['in']
         lower = float(interval_node.attrib['lower'])
         upper = float(interval_node.attrib['upper'])
-        math_expr = convert_math_to_symbolic(interval_node.xpath('./Expr/@refid') + \
-                                             [''.join(interval_node.itertext()).replace('\n', '').replace(' ', '').strip()])
+        math_expr = convert_math_to_symbolic([''.join(interval_node.itertext()).replace('\n', '').replace(' ', '').strip()])
         cond = And(lower <= getattr(v, variable, Symbol(variable)), upper > getattr(v, variable))
         conds.append(cond)
         exprs.append(math_expr)
-    return Piecewise(*(list(zip(exprs, conds)) + [(0, True)]))
+    if len(exprs) == 0:
+        return 0
+    return Piecewise(*(list(zip(exprs, conds)) + [(0, True)]), evaluate=False)
 
 
 def convert_symbolic_to_nodes(sym):
