@@ -57,15 +57,13 @@ def convert_symbolic_to_nodes(sym):
     return nodes
 
 
-def parse_parameter(param_node):
-    if param_node.attrib['type'] == 'G':
+def parse_cef_parameter(param_node):
+    order_nodes = param_node.xpath('./Order')
+    if len(order_nodes) == 0:
         int_order = 0
-        constituent_array = [t.xpath('./Constituent/@refid') for t in param_node.xpath('./ConstituentArray/Site')]
-    elif param_node.attrib['type'] == 'L':
-        int_order = int(param_node.xpath('./Order')[0].text)
-        constituent_array = [t.xpath('./Constituent/@refid') for t in param_node.xpath('./ConstituentArray/Site')]
     else:
-        raise ValueError('Unknown parameter')
+        int_order = int(order_nodes[0].text)
+    constituent_array = [t.xpath('./Constituent/@refid') for t in param_node.xpath('./ConstituentArray/Site')]
     return int_order, constituent_array
 
 
@@ -74,12 +72,19 @@ def parse_model(dbf, phase_name, model_node, parameters):
     sublattice_model = [s.xpath('./Constituent/@refid') for s in model_node.xpath('./ConstituentArray/Site')]
 
     model_hints = {}  # TODO
+    magnetic_ordering_nodes = model_node.xpath('./MagneticOrdering')
+    for magnetic_ordering_node in magnetic_ordering_nodes:
+        if magnetic_ordering_node.attrib['type'] == 'IHJ':
+            model_hints['ihj_magnetic_afm_factor'] = float(magnetic_ordering_node.attrib['afm_factor'])
+            model_hints['ihj_magnetic_structure_factor'] = float(magnetic_ordering_node.attrib['afm_factor'])
+        else:
+            raise ValueError('Unknown magnetic ordering model')
     dbf.add_structure_entry(phase_name, phase_name)
     dbf.add_phase(phase_name, model_hints, site_ratios)
     dbf.add_phase_constituents(phase_name, sublattice_model)
 
     for param_node in parameters:
-        int_order, constituent_array = parse_parameter(param_node)
+        int_order, constituent_array = parse_cef_parameter(param_node)
         param_nodes = param_node.xpath('./Expr/@refid') + [''.join(param_node.xpath('./text()')).strip()]
         function_obj = convert_math_to_symbolic(param_nodes)
         param_type = param_node.attrib['type']
@@ -146,6 +151,8 @@ def write_xml(dbf, fd):
     for name, phase_obj in sorted(dbf.phases.items()):
         if phase_nodes.get(name, None) is None:
             phase_nodes[name] = objectify.SubElement(root, "Phase", id=str(name))
+        # All model hints must be consumed for the writing to be considered successful
+        model_hints = phase_obj.model_hints.copy()
         # TODO: detection for MQMQA, etc.
         if True:
             model_node = objectify.SubElement(phase_nodes[name], "Model", type="CEF")
@@ -156,6 +163,17 @@ def write_xml(dbf, fd):
                 for constituent in sorted(constituents, key=str):
                     objectify.SubElement(site_node, "Constituent", refid=str(constituent))
                 subl_idx += 1
+            # IHJ model
+            if 'ihj_magnetic_afm_factor' in model_hints.keys():
+                objectify.SubElement(model_node, "MagneticOrdering",
+                    type="IHJ", structure_factor=str(model_hints['ihj_magnetic_structure_factor']),
+                    afm_factor=str(model_hints['ihj_magnetic_afm_factor']))
+                del model_hints['ihj_magnetic_afm_factor']
+                del model_hints['ihj_magnetic_structure_factor']
+        if len(model_hints) > 0:
+            # Some model hints were not properly consumed
+            raise ValueError('Not all model hints are supported: {}'.format(model_hints))
+
     for param in dbf._parameters.all():
         phase_name = param['phase_name']
         # Create phase implicitly if not defined

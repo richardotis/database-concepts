@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<grammar ns="" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+<grammar ns="" xmlns="http://relaxng.org/ns/structure/1.0" 
+    xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+    datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+    <include href="core.rng"/>
     <define name="CEFConstituentArray">
         <element name="ConstituentArray">
             <oneOrMore>
@@ -33,45 +36,47 @@
     <define name="CEF.model" combine="choice">
         <element name="Model">
             <attribute name="type">
+                <a:documentation>Compound Energy Formalism</a:documentation>
                 <value>CEF</value>
             </attribute>
             <ref name="CEFConstituentArray"/>
             <optional>
-                <element name="IHJMagneticModel">
+                <element name="MagneticOrdering">
+                    <attribute name="type">
+                        <a:documentation>Inden-Hillert-Jarl model for magnetic ordering</a:documentation>
+                        <value>IHJ</value>
+                    </attribute>
                     <attribute name="afm_factor"><data type="double"/></attribute>
                     <attribute name="structure_factor"><data type="double"/></attribute>
+                    <empty/>
                 </element>
             </optional>
         </element>
         <zeroOrMore>
-            <choice>
-                <element name="Parameter">
-                    <attribute name="type">
+            <element name="Parameter">
+                <attribute name="type">
+                    <choice>
                         <value>G</value>
-                    </attribute>
-                    <interleave>
-                        <text/>
-                        <ref name="CEFConstituentArray"/>
-                        <optional>
-                            <element name="Order">
-                                <value>0</value>
-                            </element>
-                        </optional>
-                    </interleave>
-                </element>
-                <element name="Parameter">
-                    <attribute name="type">
                         <value>L</value>
-                    </attribute>
-                    <interleave>
+                        <value>TC</value>
+                        <value>BMAGN</value>
+                    </choice>
+                </attribute>
+                <interleave>
+                    <optional>
                         <text/>
-                        <ref name="CEFConstituentArray"/>
+                    </optional>
+                    <zeroOrMore>
+                        <ref name="Interval"/>
+                    </zeroOrMore>
+                    <ref name="CEFConstituentArray"/>
+                    <optional>
                         <element name="Order">
                             <data type="integer"/>
                         </element>
-                    </interleave>
-                </element>
-            </choice>
+                    </optional>
+                </interleave>
+            </element>
         </zeroOrMore>
     </define>
 </grammar>

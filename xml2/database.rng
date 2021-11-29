@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<grammar ns="" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+<grammar ns="" xmlns="http://relaxng.org/ns/structure/1.0"
+    xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+    datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+    <include href="core.rng"/>
     <include href="CEF.rng"/>
     <include href="MQMQA.rng"/>
     <start>
         <element name="Database">
+            <a:documentation>Self-consistent database of material properties</a:documentation>
             <interleave>
                 <oneOrMore>
                     <element name="ChemicalElement">
+                        <a:documentation>Pure chemical element</a:documentation>
                         <attribute name="id">
-                            <data type="NCName"/>
+                            <a:documentation>Pure chemical element identifier</a:documentation>
+                            <data type="string"/>
                         </attribute>
                     </element>
                 </oneOrMore>
@@ -17,6 +23,7 @@
                 </zeroOrMore>
                 <oneOrMore>
                     <element name="Phase">
+                        <a:documentation>A material phase, such as a solid, liquid, or gas</a:documentation>
                         <attribute name="id">
                             <data type="NCName"/>
                         </attribute>
@@ -37,23 +44,7 @@
                 </attribute>
             </optional>
             <zeroOrMore>
-                <element name="Interval">
-                    <attribute name="in">
-                        <data type="NCName"/>
-                    </attribute>
-                    <attribute name="lower">
-                        <data type="decimal"/>
-                    </attribute>
-                    <attribute name="upper">
-                        <data type="decimal"/>
-                    </attribute>
-                    <oneOrMore>
-                        <choice>
-                            <text/>
-                            <ref name="Expr"/>
-                        </choice>
-                    </oneOrMore>
-                </element>
+                <ref name="Interval"/>
             </zeroOrMore>
         </element>
     </define>
