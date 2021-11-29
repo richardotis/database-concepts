@@ -6,12 +6,12 @@ from lxml import etree, objectify
 
 def convert_math_to_symbolic(math_nodes):
     result = 0.0
-    for math_node in math_nodes:
-        if isinstance(math_node, str):
-            # +0 is a hack, for how the function works
-            result += _sympify_string(math_node+'+0')
-        elif math_node.tag == 'Expr':
-            result += Symbol(math_node.xpath('./@(refid or id)')[0])
+    interval_nodes = [x for x in math_nodes if (not isinstance(x, str)) and x.tag == 'Interval']
+    string_nodes = [x for x in math_nodes if isinstance(x, str)]
+    for math_node in string_nodes:
+        # +0 is a hack, for how the function works
+        result += _sympify_string(math_node+'+0')
+    result += convert_intervals_to_piecewise(interval_nodes)
     result = result.xreplace({Symbol('T'): v.T, Symbol('P'): v.P})
     return result
 
@@ -85,7 +85,7 @@ def parse_model(dbf, phase_name, model_node, parameters):
 
     for param_node in parameters:
         int_order, constituent_array = parse_cef_parameter(param_node)
-        param_nodes = param_node.xpath('./Expr/@refid') + [''.join(param_node.xpath('./text()')).strip()]
+        param_nodes = param_node.xpath('./Interval') + [''.join(param_node.xpath('./text()')).strip()]
         function_obj = convert_math_to_symbolic(param_nodes)
         param_type = param_node.attrib['type']
         ref = None  # TODO
