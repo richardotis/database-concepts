@@ -1,5 +1,6 @@
 from pycalphad.io.tdb import _sympify_string, _process_reference_state, to_interval
 from pycalphad import Database, variables as v
+from pycalphad import __version__ as pycalphad_version
 from sympy import Piecewise, And, Symbol
 from lxml import etree, objectify
 
@@ -168,6 +169,8 @@ def write_xml(dbf, fd):
     # TODO: metadata for writing database
     root = objectify.Element("Database", version=str(0))
     metadata = objectify.SubElement(root, "metadata")
+    writer = objectify.SubElement(metadata, "writer")
+    writer._setText('pycalphad ' + str(pycalphad_version))
     phase_nodes = {}
     for element in sorted(dbf.elements):
         ref = dbf.refstates.get(element, {})

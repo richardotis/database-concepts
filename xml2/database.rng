@@ -14,7 +14,12 @@
             <interleave>
                 <optional>
                     <element name="metadata">
-                        <empty/>
+                        <optional>
+                            <element name="writer">
+                                <a:documentation>Software responsible for writing the database</a:documentation>
+                                <data type="string"/>
+                            </element>
+                        </optional>
                     </element>
                 </optional>
                 <oneOrMore>
