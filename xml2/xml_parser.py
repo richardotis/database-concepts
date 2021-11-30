@@ -136,9 +136,19 @@ def read_xml(dbf, fd):
     for child in root:
         if child.tag == 'ChemicalElement':
             element = str(child.attrib['id'])
-            dbf.species.add(v.Species(element, {element: 1.0}, charge=0))
+            dbf.species.add(v.Species(element, {element: 1}, charge=0))
             dbf.elements.add(element)
             _process_reference_state(dbf, element, 'BLANK', 0.0, 0.0, 0.0)
+        elif child.tag == 'Species':
+            species = str(child.attrib['id'])
+            constituent_dict = {}
+            species_charge = float(child.attrib.get('charge', 0))
+            constituent_nodes = child.xpath('./ChemicalElement')
+            for constituent_node in constituent_nodes:
+                el = constituent_node.attrib['refid']
+                ratio = float(constituent_node.attrib['ratio'])
+                constituent_dict[el] = ratio
+            dbf.species.add(v.Species(species, constituent_dict, charge=species_charge))
         elif child.tag == 'Expr':
             function_name = str(child.attrib['id'])
             function_obj = convert_intervals_to_piecewise(child)
@@ -161,8 +171,9 @@ def write_xml(dbf, fd):
         objectify.SubElement(root, "ChemicalElement", id=str(element))
     for species in sorted(dbf.species, key=lambda s: s.name):
         if species.name not in dbf.elements:
-            # TODO
-            pass
+            species_node = objectify.SubElement(root, "Species", id=str(species.name), charge=str(species.charge))
+            for el_name, ratio in sorted(species.constituents.items(), key=lambda t: t[0]):
+                objectify.SubElement(species_node, "ChemicalElement", refid=str(el_name), ratio=str(ratio))
     for name, expr in sorted(dbf.symbols.items()):
         expr_node = objectify.SubElement(root, "Expr", id=str(name))
         converted_nodes = convert_symbolic_to_nodes(expr)

@@ -16,8 +16,33 @@
                             <a:documentation>Pure chemical element identifier</a:documentation>
                             <data type="string"/>
                         </attribute>
+                        <empty/>
                     </element>
                 </oneOrMore>
+                <zeroOrMore>
+                    <element name="Species">
+                        <a:documentation>Chemical Species</a:documentation>
+                        <attribute name="id">
+                            <a:documentation>Species identifier</a:documentation>
+                            <data type="string"/>
+                        </attribute>
+                        <optional>
+                            <a:documentation>Electric charge of species</a:documentation>
+                            <attribute name="charge"><data type="double"/></attribute>
+                        </optional>
+                        <oneOrMore>
+                            <element name="ChemicalElement">
+                                <attribute name="refid">
+                                    <data type="string"/>
+                                </attribute>
+                                <attribute name="ratio">
+                                    <a:documentation>Atomic ratio of this element in the species</a:documentation>
+                                    <data type="double"/>
+                                </attribute>
+                            </element>
+                        </oneOrMore>
+                    </element>
+                </zeroOrMore>
                 <zeroOrMore>
                     <ref name="Expr"/>
                 </zeroOrMore>
