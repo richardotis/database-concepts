@@ -3,6 +3,8 @@ from pycalphad import Database, variables as v
 from pycalphad import __version__ as pycalphad_version
 from sympy import Piecewise, And, Symbol
 from lxml import etree, objectify
+import logging
+logger = logging.getLogger(__name__)
 
 
 def convert_math_to_symbolic(math_nodes):
@@ -143,7 +145,7 @@ def read_xml(dbf, fd):
     tree = etree.parse(fd, parser=parser)
     relaxng = etree.RelaxNG(etree.parse('database.rng'))
     if not relaxng.validate(tree):
-        print('Validation Error:', relaxng.error_log)
+        logger.warn(relaxng.error_log)
     root = tree.getroot()
 
     for child in root:
