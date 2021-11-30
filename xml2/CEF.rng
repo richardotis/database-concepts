@@ -25,7 +25,7 @@
                     <oneOrMore>
                         <element name="Constituent">
                             <attribute name="refid">
-                                <data type="NCName"/>
+                                <data type="string"/>
                             </attribute>
                         </element>
                     </oneOrMore>
@@ -39,18 +39,58 @@
                 <a:documentation>Compound Energy Formalism</a:documentation>
                 <value>CEF</value>
             </attribute>
-            <ref name="CEFConstituentArray"/>
-            <optional>
-                <element name="MagneticOrdering">
-                    <attribute name="type">
-                        <a:documentation>Inden-Hillert-Jarl model for magnetic ordering</a:documentation>
-                        <value>IHJ</value>
-                    </attribute>
-                    <attribute name="afm_factor"><data type="double"/></attribute>
-                    <attribute name="structure_factor"><data type="double"/></attribute>
-                    <empty/>
-                </element>
-            </optional>
+            <interleave>
+                <ref name="CEFConstituentArray"/>
+                <optional>
+                    <choice>
+                        <element name="Liquid">
+                            <a:documentation>Designates this phase as a liquid phase. Not used by all implementations.</a:documentation>
+                            <empty/>
+                        </element>
+                        <element name="Gas">
+                            <a:documentation>Designates this phase as a gas phase. Not used by all implementations.</a:documentation>
+                            <empty/>
+                        </element>
+                        <element name="Aqueous">
+                            <a:documentation>Designates this phase as an aqueous phase. Not used by all implementations.</a:documentation>
+                            <empty/>
+                        </element>
+                        <element name="Charged">
+                            <a:documentation>Designates this phase as containing charged species requiring explicit charge balance. Not used by all implementations.</a:documentation>
+                            <empty/>
+                        </element>
+                        <element name="TwoSublatticeIonicLiquid">
+                            <a:documentation>Two-sublattice ionic liquid model of Sundman et al</a:documentation>
+                            <empty/>
+                        </element>
+                    </choice>
+                </optional>
+                <optional>
+                    <element name="MagneticOrdering">
+                        <attribute name="type">
+                            <a:documentation>Inden-Hillert-Jarl model for magnetic ordering</a:documentation>
+                            <value>IHJ</value>
+                        </attribute>
+                        <attribute name="afm_factor"><data type="double"/></attribute>
+                        <attribute name="structure_factor"><data type="double"/></attribute>
+                        <empty/>
+                    </element>
+                </optional>
+                <optional>
+                    <element name="AtomicOrdering">
+                        <a:documentation>Two-part atomic ordering model of Ansara et al</a:documentation>
+                        <attribute name="ordered_part">
+                            <a:documentation>Ordered phase name</a:documentation>
+                            <data type="string"/>
+                        </attribute>
+                        <attribute name="disordered_part">
+                            <a:documentation>Disordered phase name</a:documentation>
+                            <data type="string"/>
+                        </attribute>
+                        <empty/>
+                    </element>
+                </optional>
+            </interleave>
         </element>
         <zeroOrMore>
             <element name="Parameter">
@@ -60,6 +100,7 @@
                         <value>L</value>
                         <value>TC</value>
                         <value>BMAGN</value>
+                        <value>V0</value>
                     </choice>
                 </attribute>
                 <interleave>

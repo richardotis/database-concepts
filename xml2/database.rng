@@ -43,9 +43,11 @@
                     <data type="NCName"/>
                 </attribute>
             </optional>
-            <zeroOrMore>
-                <ref name="Interval"/>
-            </zeroOrMore>
+            <mixed>
+                <zeroOrMore>
+                    <ref name="Interval"/>
+                </zeroOrMore>
+            </mixed>
         </element>
     </define>
 </grammar>

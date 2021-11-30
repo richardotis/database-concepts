@@ -1,6 +1,6 @@
-from pycalphad.io.tdb import _sympify_string, to_interval
+from pycalphad.io.tdb import _sympify_string, _process_reference_state, to_interval
 from pycalphad import Database, variables as v
-from sympy import Piecewise, Add, And, Symbol
+from sympy import Piecewise, And, Symbol
 from lxml import etree, objectify
 
 
@@ -41,15 +41,16 @@ def convert_symbolic_to_nodes(sym):
             interval = to_interval(cond)
             lower = str(float(interval.start))
             upper = str(float(interval.end))
+            converted_expr_nodes = [x for x in convert_symbolic_to_nodes(expr) if x != '0']
+            if lower == '-inf' and upper == 'inf':
+                nodes.extend(converted_expr_nodes)
+                continue
             interval_node = etree.Element("Interval", attrib={"in": "T", "lower": lower, "upper": upper})
-            converted_expr_nodes = convert_symbolic_to_nodes(expr)
             for node in converted_expr_nodes:
                 if isinstance(node, str):
                     interval_node.text = node
                 else:
                     interval_node.append(node)
-            if len(interval_node) == 0 and interval_node.text == '0':
-                continue
             nodes.append(interval_node)
 
     else:
@@ -67,6 +68,14 @@ def parse_cef_parameter(param_node):
     constituent_array = [t.xpath('./Constituent/@refid') for t in param_node.xpath('./ConstituentArray/Site')]
     return int_order, constituent_array
 
+# Symmetry options handled separately in XML
+phase_options = {'ionic_liquid_2SL': 'TwoSublatticeIonicLiquid',
+                 'liquid': 'Liquid',
+                 'gas': 'Gas',
+                 'aqueous': 'Aqueous',
+                 'charged_phase': 'Charged'}
+inv_phase_options = dict([reversed(i) for i in phase_options.items()])
+
 
 def parse_model(dbf, phase_name, model_node, parameters):
     site_ratios = [float(m) for m in model_node.xpath('./ConstituentArray/Site/@ratio')]
@@ -77,9 +86,22 @@ def parse_model(dbf, phase_name, model_node, parameters):
     for magnetic_ordering_node in magnetic_ordering_nodes:
         if magnetic_ordering_node.attrib['type'] == 'IHJ':
             model_hints['ihj_magnetic_afm_factor'] = float(magnetic_ordering_node.attrib['afm_factor'])
-            model_hints['ihj_magnetic_structure_factor'] = float(magnetic_ordering_node.attrib['afm_factor'])
+            model_hints['ihj_magnetic_structure_factor'] = float(magnetic_ordering_node.attrib['structure_factor'])
         else:
             raise ValueError('Unknown magnetic ordering model')
+    atomic_ordering_nodes = model_node.xpath('./AtomicOrdering')
+    for atomic_ordering_node in atomic_ordering_nodes:
+        model_hints['ordered_phase'] = str(atomic_ordering_node.attrib['ordered_part'])
+        model_hints['disordered_phase'] = str(atomic_ordering_node.attrib['disordered_part'])
+    # Simple phase options
+    for ipo in inv_phase_options.keys():
+        ipo_nodes = model_node.xpath('./'+str(ipo))
+        for ipo_node in ipo_nodes:
+            model_hints[inv_phase_options[ipo_node.tag]] = True
+    # Parameter symmetry options
+    symmetry_nodes = model_node.xpath('./Symmetry')
+    for symmetry_node in symmetry_nodes:
+        model_hints['symmetry_'+str(symmetry_node.attrib['type'])] = True
     dbf.add_structure_entry(phase_name, phase_name)
     dbf.add_phase(phase_name, model_hints, site_ratios)
     dbf.add_phase_constituents(phase_name, sublattice_model)
@@ -116,6 +138,7 @@ def read_xml(dbf, fd):
             element = str(child.attrib['id'])
             dbf.species.add(v.Species(element, {element: 1.0}, charge=0))
             dbf.elements.add(element)
+            _process_reference_state(dbf, element, 'BLANK', 0.0, 0.0, 0.0)
         elif child.tag == 'Expr':
             function_name = str(child.attrib['id'])
             function_obj = convert_intervals_to_piecewise(child)
@@ -140,13 +163,12 @@ def write_xml(dbf, fd):
         if species.name not in dbf.elements:
             # TODO
             pass
-    symbol_names = set(dbf.symbols.keys())
     for name, expr in sorted(dbf.symbols.items()):
         expr_node = objectify.SubElement(root, "Expr", id=str(name))
         converted_nodes = convert_symbolic_to_nodes(expr)
         for node in converted_nodes:
             if isinstance(node, str):
-                expr_node.text = node
+                expr_node._setText(node)
             else:
                 expr_node.append(node)
     for name, phase_obj in sorted(dbf.phases.items()):
@@ -154,6 +176,7 @@ def write_xml(dbf, fd):
             phase_nodes[name] = objectify.SubElement(root, "Phase", id=str(name))
         # All model hints must be consumed for the writing to be considered successful
         model_hints = phase_obj.model_hints.copy()
+        possible_options = set(phase_options.keys()).intersection(model_hints.keys())
         # TODO: detection for MQMQA, etc.
         if True:
             model_node = objectify.SubElement(phase_nodes[name], "Model", type="CEF")
@@ -171,6 +194,26 @@ def write_xml(dbf, fd):
                     afm_factor=str(model_hints['ihj_magnetic_afm_factor']))
                 del model_hints['ihj_magnetic_afm_factor']
                 del model_hints['ihj_magnetic_structure_factor']
+            # Two-part atomic ordering
+            if ('ordered_phase' in model_hints.keys()):
+                objectify.SubElement(model_node, "AtomicOrdering",
+                    ordered_part=str(model_hints['ordered_phase']),
+                    disordered_part=str(model_hints['disordered_phase']))
+                del model_hints['ordered_phase']
+                del model_hints['disordered_phase']
+            # Symmetry options
+            symmetry_node = None
+            if ('symmetry_FCC_4SL' in model_hints.keys()):
+                symmetry_node = objectify.SubElement(model_node, "Symmetry", type="FCC_4SL")
+                del model_hints['symmetry_FCC_4SL']
+            if ('symmetry_BCC_4SL' in model_hints.keys()):
+                if symmetry_node is not None:
+                    raise ValueError('Multiple parameter symmetry options specified')
+                del model_hints['symmetry_BCC_4SL']
+            # Simple phase options
+            for possible_option in possible_options:
+                objectify.SubElement(model_node, phase_options[possible_option])
+                del model_hints[possible_option]
         if len(model_hints) > 0:
             # Some model hints were not properly consumed
             raise ValueError('Not all model hints are supported: {}'.format(model_hints))
