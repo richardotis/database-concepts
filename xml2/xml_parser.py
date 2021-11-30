@@ -138,7 +138,8 @@ def read_xml(dbf, fd):
             element = str(child.attrib['id'])
             dbf.species.add(v.Species(element, {element: 1}, charge=0))
             dbf.elements.add(element)
-            _process_reference_state(dbf, element, 'BLANK', 0.0, 0.0, 0.0)
+            _process_reference_state(dbf, element, child.attrib['reference_phase'],
+                                     float(child.attrib['mass']), float(child.attrib['H298']), float(child.attrib['S298']))
         elif child.tag == 'Species':
             species = str(child.attrib['id'])
             constituent_dict = {}
@@ -165,10 +166,17 @@ def read_xml(dbf, fd):
 
 def write_xml(dbf, fd):
     # TODO: metadata for writing database
-    root = objectify.Element("Database")
+    root = objectify.Element("Database", version=str(0))
+    metadata = objectify.SubElement(root, "metadata")
     phase_nodes = {}
     for element in sorted(dbf.elements):
-        objectify.SubElement(root, "ChemicalElement", id=str(element))
+        ref = dbf.refstates.get(element, {})
+        refphase = ref.get('phase', 'BLANK')
+        mass = ref.get('mass', 0.0)
+        H298 = ref.get('H298', 0.0)
+        S298 = ref.get('S298', 0.0)
+        objectify.SubElement(root, "ChemicalElement", id=str(element), mass=str(mass),
+                             reference_phase=refphase, H298=str(H298), S298=str(S298))
     for species in sorted(dbf.species, key=lambda s: s.name):
         if species.name not in dbf.elements:
             species_node = objectify.SubElement(root, "Species", id=str(species.name), charge=str(species.charge))

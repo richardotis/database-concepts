@@ -8,13 +8,37 @@
     <start>
         <element name="Database">
             <a:documentation>Self-consistent database of material properties</a:documentation>
+            <attribute name="version">
+                <value>0</value>
+            </attribute>
             <interleave>
+                <optional>
+                    <element name="metadata">
+                        <empty/>
+                    </element>
+                </optional>
                 <oneOrMore>
                     <element name="ChemicalElement">
                         <a:documentation>Pure chemical element</a:documentation>
                         <attribute name="id">
                             <a:documentation>Pure chemical element identifier</a:documentation>
                             <data type="string"/>
+                        </attribute>
+                        <attribute name="mass">
+                            <a:documentation>Molar mass of element</a:documentation>
+                            <data type="double"/>
+                        </attribute>
+                        <attribute name="reference_phase">
+                            <a:documentation>Stable phase of element in standard state</a:documentation>
+                            <data type="string"/>
+                        </attribute>
+                        <attribute name="H298">
+                            <a:documentation>Reference value of enthalpy at 298 K</a:documentation>
+                            <data type="double"/>
+                        </attribute>
+                        <attribute name="S298">
+                            <a:documentation>Reference value of entropy at 298 K</a:documentation>
+                            <data type="double"/>
                         </attribute>
                         <empty/>
                     </element>
