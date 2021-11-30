@@ -10,9 +10,11 @@
             <attribute name="lower">
                 <data type="decimal"/>
             </attribute>
-            <attribute name="upper">
-                <data type="decimal"/>
-            </attribute>
+            <optional>
+                <attribute name="upper">
+                    <data type="decimal"/>
+                </attribute>
+            </optional>
             <text/>
         </element>
     </define>

@@ -24,10 +24,13 @@ def convert_intervals_to_piecewise(interval_nodes):
         if interval_node.attrib['in'] != 'T':
             raise ValueError('Unsupported interval')
         variable = interval_node.attrib['in']
-        lower = float(interval_node.attrib['lower'])
-        upper = float(interval_node.attrib['upper'])
+        lower = float(interval_node.attrib.get('lower', '-inf'))
+        upper = float(interval_node.attrib.get('upper', 'inf'))
         math_expr = convert_math_to_symbolic([''.join(interval_node.itertext()).replace('\n', '').replace(' ', '').strip()])
-        cond = And(lower <= getattr(v, variable, Symbol(variable)), upper > getattr(v, variable))
+        if upper != float('inf'):
+            cond = And(lower <= getattr(v, variable, Symbol(variable)), upper > getattr(v, variable))
+        else:
+            cond = (lower <= getattr(v, variable, Symbol(variable)))
         conds.append(cond)
         exprs.append(math_expr)
     if len(exprs) == 0:
@@ -46,7 +49,10 @@ def convert_symbolic_to_nodes(sym):
             if lower == '-inf' and upper == 'inf':
                 nodes.extend(converted_expr_nodes)
                 continue
-            interval_node = etree.Element("Interval", attrib={"in": "T", "lower": lower, "upper": upper})
+            elif lower != '-inf' and upper == 'inf':
+                interval_node = etree.Element("Interval", attrib={"in": "T", "lower": lower})
+            else:
+                interval_node = etree.Element("Interval", attrib={"in": "T", "lower": lower, "upper": upper})
             for node in converted_expr_nodes:
                 if isinstance(node, str):
                     interval_node.text = node
@@ -162,7 +168,10 @@ def read_xml(dbf, fd):
             function_obj = convert_intervals_to_piecewise(child)
             _setitem_raise_duplicates(dbf.symbols, function_name, function_obj)
         elif child.tag == 'Phase':
-            model_node = child.xpath('./Model')[0]
+            model_nodes = child.xpath('./Model')
+            if len(model_nodes) == 0:
+                continue
+            model_node = model_nodes[0]
             if model_node.attrib['type'] != 'CEF':
                 continue
             phase_name = child.attrib['id']
