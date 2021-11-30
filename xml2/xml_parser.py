@@ -82,7 +82,7 @@ def parse_model(dbf, phase_name, model_node, parameters):
     site_ratios = [float(m) for m in model_node.xpath('./ConstituentArray/Site/@ratio')]
     sublattice_model = [s.xpath('./Constituent/@refid') for s in model_node.xpath('./ConstituentArray/Site')]
 
-    model_hints = {}  # TODO
+    model_hints = {}
     magnetic_ordering_nodes = model_node.xpath('./MagneticOrdering')
     for magnetic_ordering_node in magnetic_ordering_nodes:
         if magnetic_ordering_node.attrib['type'] == 'IHJ':
@@ -113,7 +113,13 @@ def parse_model(dbf, phase_name, model_node, parameters):
         function_obj = convert_math_to_symbolic(param_nodes)
         param_type = param_node.attrib['type']
         ref = None  # TODO
-        diffusing_species = None  # TODO
+        diffusing_species_nodes = model_node.xpath('./DiffusingSpecies/@refid')
+        if len(diffusing_species_nodes) == 1:
+            diffusing_species = str(diffusing_species_nodes[0])
+        elif len(diffusing_species_nodes) == 0:
+            diffusing_species = None
+        else:
+            raise ValueError('Multiple DiffusingSpecies nodes specified')
         dbf.add_parameter(param_type, phase_name,
                           [[str(c) for c in sorted(lx)] for lx in constituent_array],
                           int_order, function_obj, ref, diffusing_species, force_insert=False)
@@ -166,7 +172,6 @@ def read_xml(dbf, fd):
 
 
 def write_xml(dbf, fd):
-    # TODO: metadata for writing database
     root = objectify.Element("Database", version=str(0))
     metadata = objectify.SubElement(root, "metadata")
     writer = objectify.SubElement(metadata, "writer")
@@ -256,16 +261,20 @@ def write_xml(dbf, fd):
             for constituent in constituents:
                 objectify.SubElement(site_node, "Constituent", refid=str(constituent))
             subl_idx += 1
+        if param['diffusing_species'] != v.Species(None):
+            objectify.SubElement(param_node, "DiffusingSpecies", refid=str(param['diffusing_species']))
         nodes = convert_symbolic_to_nodes(param['parameter'])
         for node in nodes:
             if isinstance(node, str):
                 param_node._setText(node)
             else:
                 param_node.append(node)
-        # TODO: param['diffusing_species']
         # TODO: param['reference']
     objectify.deannotate(root, xsi_nil=True)
     etree.cleanup_namespaces(root)
+    fd.write('<?xml version="1.0"?>\n')
+    # XXX: href needs to be changed
+    fd.write('<?xml-model href="database.rng" schematypens="http://relaxng.org/ns/structure/1.0" type="application/xml"?>\n')
     fd.write(etree.tostring(root, pretty_print=True).decode("utf-8"))
 
 

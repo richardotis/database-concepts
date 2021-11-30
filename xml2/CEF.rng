@@ -137,6 +137,13 @@
                             <data type="integer"/>
                         </element>
                     </optional>
+                    <optional>
+                        <element name="DiffusingSpecies">
+                            <attribute name="refid">
+                                <data type="string"/>
+                            </attribute>
+                        </element>
+                    </optional>
                 </interleave>
             </element>
         </zeroOrMore>
