@@ -96,11 +96,32 @@
             <element name="Parameter">
                 <attribute name="type">
                     <choice>
-                        <value>G</value>
-                        <value>L</value>
-                        <value>TC</value>
-                        <value>BMAGN</value>
-                        <value>V0</value>
+                        <!-- Gibbs energy parameters -->
+                        <value>G</value><a:documentation>Gibbs parameters</a:documentation>
+                        <value>L</value><a:documentation>Excess Gibbs energy</a:documentation>
+                        <!-- Physical model parameters -->
+                        <value>TC</value><a:documentation>Curie temperature</a:documentation>
+                        <value>NT</value><a:documentation>Neel temperature</a:documentation>
+                        <value>BMAGN</value><a:documentation>Bohr magneton number</a:documentation>
+                        <value>GD</value><a:documentation>Gibbs energy difference between liquid and amorphous states</a:documentation>
+                        <value>THETA</value><a:documentation>Einstein temperature (log)</a:documentation>
+                        <!-- Molar volume parameters -->
+                        <value>V0</value><a:documentation>Molar volume at standard temperature and pressure (STP)</a:documentation>
+                        <value>VA</value><a:documentation>Integrated thermal expansivity</a:documentation>
+                        <value>VC</value><a:documentation>High-pressure fitting parameter</a:documentation>
+                        <value>VK</value><a:documentation>Isothermal compressibility</a:documentation>
+                        <!-- Property model parameters -->
+                        <value>VISC</value><a:documentation>Viscosity, RT*log(viscosity)</a:documentation>
+                        <value>ELRS</value><a:documentation>Electric resistivity</a:documentation>
+                        <value>THCD</value><a:documentation>Thermal Conductivity</a:documentation>
+                        <value>SIGM</value><a:documentation>Surface tension of a liquid endmember</a:documentation>
+                        <value>XI</value><a:documentation>Surface tension dampening factor for a constituent</a:documentation>
+                        <!-- Mobility parameters -->
+                        <value>MQ</value><a:documentation>Activation enthalpy for mobility</a:documentation>
+                        <value>MF</value><a:documentation>Pre-exponential factor for mobility</a:documentation>
+                        <value>DQ</value><a:documentation>Activation enthalpy for diffusivity</a:documentation>
+                        <value>DF</value><a:documentation>Pre-expontential factor for diffusivity</a:documentation>
+                        <value>VS</value><a:documentation>Volume per mole of volume-carrying species</a:documentation>
                     </choice>
                 </attribute>
                 <interleave>
