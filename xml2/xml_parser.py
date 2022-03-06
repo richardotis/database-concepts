@@ -1,7 +1,7 @@
 from pycalphad.io.tdb import _sympify_string, _process_reference_state, to_interval
 from pycalphad import Database, variables as v
 from pycalphad import __version__ as pycalphad_version
-from sympy import Piecewise, And, Symbol
+from symengine import Piecewise, And, Symbol, S
 from lxml import etree, objectify
 import logging
 logger = logging.getLogger(__name__)
@@ -37,13 +37,14 @@ def convert_intervals_to_piecewise(interval_nodes):
         exprs.append(math_expr)
     if len(exprs) == 0:
         return 0
-    return Piecewise(*(list(zip(exprs, conds)) + [(0, True)]), evaluate=False)
+    return Piecewise(*(list(zip(exprs, conds)) + [(0, True)]))
 
 
 def convert_symbolic_to_nodes(sym):
     nodes = []
     if isinstance(sym, Piecewise):
-        for expr, cond in sym.args:
+        filtered_args = [(x, cond) for x, cond in zip(*[iter(sym.args)]*2) if not ((cond == S.true) and (x == S.Zero))]
+        for expr, cond in filtered_args:
             interval = to_interval(cond)
             lower = str(float(interval.start))
             upper = str(float(interval.end))
