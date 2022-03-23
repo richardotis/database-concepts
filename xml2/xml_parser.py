@@ -238,11 +238,9 @@ def write_xml(dbf, fd):
             chemical_groups_node = objectify.SubElement(model_node, "ChemicalGroups")
             cation_node = objectify.SubElement(chemical_groups_node, "Cations")
             for constituent, group_id in hint["chemical_groups"]["cations"].items():
-                    print(str(group_id))
                     objectify.SubElement(cation_node, "Constituent", refid=str(constituent), groupid=str(group_id))
             anion_node = objectify.SubElement(chemical_groups_node, "Anions")
             for constituent, group_id in hint["chemical_groups"]["anions"].items():
-                    print(str(group_id))
                     objectify.SubElement(anion_node, "Constituent", refid=str(constituent), groupid=str(group_id))                
             del model_hints["mqmqa"]
         else:
