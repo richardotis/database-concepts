@@ -227,7 +227,7 @@ def write_xml(dbf, fd):
             constit_array_node = objectify.SubElement(model_node, "ConstituentArray")
             subl_idx = 0
             # Don't loop over sublattices, they are reflective of cation/anion sublattices for MQMQA
-            for constituents in zip(phase_obj.constituents):
+            for constituents in phase_obj.constituents:
                 # Site ratios are not relevant for MQMQA phases
                 site_node = objectify.SubElement(constit_array_node, "Site", id=str(subl_idx))
                 for constituent in sorted(constituents, key=str):
