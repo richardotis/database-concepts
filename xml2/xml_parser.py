@@ -191,7 +191,8 @@ def write_xml(dbf, fd):
     phase_nodes = {}
     for element in sorted(dbf.elements):
         ref = dbf.refstates.get(element, {})
-        refphase = ref.get('phase', 'BLANK')
+        refphase = ref.get('phase', 'BLANK') 
+        refphase = refphase if refphase is not None else 'BLANK'  # TODO: MQMQA DAT parser gives None
         mass = ref.get('mass', 0.0)
         H298 = ref.get('H298', 0.0)
         S298 = ref.get('S298', 0.0)
@@ -216,8 +217,35 @@ def write_xml(dbf, fd):
         # All model hints must be consumed for the writing to be considered successful
         model_hints = phase_obj.model_hints.copy()
         possible_options = set(phase_options.keys()).intersection(model_hints.keys())
-        # TODO: detection for MQMQA, etc.
-        if True:
+        # TODO: extra parameters for QKTO
+        if "mqmqa" in model_hints:
+            # MQMQA model
+            hint = model_hints["mqmqa"]
+            model_node = objectify.SubElement(phase_nodes[name], "Model", type="MQMQA", version=hint["type"])
+
+            # ConstituentArray (MQMConstituentArray)
+            constit_array_node = objectify.SubElement(model_node, "ConstituentArray")
+            subl_idx = 0
+            # Don't loop over sublattices, they are reflective of cation/anion sublattices for MQMQA
+            for constituents in zip(phase_obj.constituents):
+                # Site ratios are not relevant for MQMQA phases
+                site_node = objectify.SubElement(constit_array_node, "Site", id=str(subl_idx))
+                for constituent in sorted(constituents, key=str):
+                    objectify.SubElement(site_node, "Constituent", refid=str(constituent))
+                subl_idx += 1
+            
+            # ChemicalGroups
+            chemical_groups_node = objectify.SubElement(model_node, "ChemicalGroups")
+            cation_node = objectify.SubElement(chemical_groups_node, "Cations")
+            for constituent, group_id in hint["chemical_groups"]["cations"].items():
+                    print(str(group_id))
+                    objectify.SubElement(cation_node, "Constituent", refid=str(constituent), groupid=str(group_id))
+            anion_node = objectify.SubElement(chemical_groups_node, "Anions")
+            for constituent, group_id in hint["chemical_groups"]["anions"].items():
+                    print(str(group_id))
+                    objectify.SubElement(anion_node, "Constituent", refid=str(constituent), groupid=str(group_id))                
+            del model_hints["mqmqa"]
+        else:
             model_node = objectify.SubElement(phase_nodes[name], "Model", type="CEF")
             constit_array_node = objectify.SubElement(model_node, "ConstituentArray")
             subl_idx = 0
@@ -264,8 +292,10 @@ def write_xml(dbf, fd):
             phase_nodes[phase_name] = objectify.SubElement(root, "Phase", id=str(phase_name))
         phase_node = phase_nodes[phase_name]
         param_node = objectify.SubElement(phase_node, "Parameter", type=str(param['parameter_type']))
-        order_node = objectify.SubElement(param_node, "Order")
-        order_node._setText(str(param['parameter_order']))
+        if param.get("order") is not None:            
+            order_node = objectify.SubElement(param_node, "Order")
+            order_node._setText(str(param['parameter_order']))
+        # Constituent array
         constit_array_node = objectify.SubElement(param_node, "ConstituentArray")
         subl_idx = 0
         for constituents in param['constituent_array']:
@@ -275,15 +305,35 @@ def write_xml(dbf, fd):
             subl_idx += 1
         if param['diffusing_species'] != v.Species(None):
             objectify.SubElement(param_node, "DiffusingSpecies", refid=str(param['diffusing_species']))
-        nodes = convert_symbolic_to_nodes(param['parameter'])
-        for node in nodes:
-            if isinstance(node, str):
-                param_node._setText(node)
-            else:
-                param_node.append(node)
+        # Handle unique aspects of MQMQA parameters
+        if param["parameter_type"] == "MQMG":
+            objectify.SubElement(param_node, "Zeta")._setText(str(param["zeta"]))
+            objectify.SubElement(param_node, "StoichiometricFactor")._setText(str(param["stoichiometry"][0]))
+        if param["parameter_type"] == "MQMZ":
+            coordnations_node = objectify.SubElement(param_node, "Coordinations")
+            coordnations_node._setText(" ".join(map(str, param["coordinations"])))
+        if param["parameter_type"] == "MQMX":
+            objectify.SubElement(param_node, "MixingCode", type=param["mixing_code"])
+            objectify.SubElement(param_node, "Exponents")._setText(" ".join(map(str, param["exponents"])))
+            if param["additional_mixing_constituent"] != v.Species(None):
+                objectify.SubElement(param_node, "AdditionalMixingConstituent", refid=str(param["additional_mixing_constituent"]))
+                objectify.SubElement(param_node, "AdditionalMixingExponent")._setText(str(param["additional_mixing_exponent"]))
+        if param.get("parameter") is not None:            
+            nodes = convert_symbolic_to_nodes(param['parameter'])
+            for node in nodes:
+                if isinstance(node, str):
+                    param_node._setText(node)
+                else:
+                    param_node.append(node)
         # TODO: param['reference']
     objectify.deannotate(root, xsi_nil=True)
     etree.cleanup_namespaces(root)
+
+    # Validate
+    relaxng = etree.RelaxNG(etree.parse('database.rng'))
+    if not relaxng.validate(root):
+        raise ValueError("Failed to validate constructed database", relaxng.error_log)
+
     fd.write('<?xml version="1.0"?>\n')
     # XXX: href needs to be changed
     fd.write('<?xml-model href="database.rng" schematypens="http://relaxng.org/ns/structure/1.0" type="application/xml"?>\n')

@@ -3,7 +3,6 @@
     xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
     datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
     <include href="core.rng"/>
-    <!--TODO: separate pair and quadruplet constitunt arrays?-->
     <define name="MQMConstituentArray">
         <!--Exactly two sites: cations and anions-->
         <element name="ConstituentArray">
@@ -53,10 +52,16 @@
                 <a:documentation>Modified Quasichemical Model in the Quadruplet Approximation</a:documentation>
                 <value>MQMQA</value>
             </attribute>
+            <attribute name="version">
+                <choice>
+                    <value>SUBG</value><a:documentation>Original form of the MQMQA from Pelton, Chartrand, and Eriksson (2001)</a:documentation>
+                    <value>SUBQ</value><a:documentation>Revised form of the MQMQA by Lambotte and Chartrand (2011)</a:documentation>
+                </choice>
+            </attribute>
             <interleave>
                 <ref name="MQMConstituentArray"/>
                 <element name="ChemicalGroups">
-                    <a:documentation>Mapping of catipn/anion species to a integer chemical groups. Equal integers mean the species belong to the same group.</a:documentation>
+                    <a:documentation>Mapping of cation/anion species to a integer chemical groups. Equal integers mean the species belong to the same group.</a:documentation>
                     <interleave>
                         <element name="Cations">
                             <oneOrMore>
@@ -95,7 +100,7 @@
                         <value>MQMX</value><a:documentation>Excess Gibbs energy for a quadruplet</a:documentation>
                     </choice>
                 </attribute>
-                <!--TODO: can the different parameter types be part of the <choice> tag?"-->
+                <!-- TODO: can the different parameter types be part of the <choice> tag?" -->
                 <interleave>
                     <optional>
                         <text/>
@@ -104,7 +109,7 @@
                         <ref name="Interval"/>
                     </zeroOrMore>
                     <ref name="MQMConstituentArray"/>
-                    <!--MQMG: Pair zetas and stoichiometry-->
+                    <!-- MQMG: Pair zetas and stoichiometry -->
                     <optional>
                         <element name="Zeta">
                             <data type="float"/>
@@ -113,7 +118,7 @@
                             <data type="float"/>
                         </element>
                     </optional>
-                    <!--MQMZ: Quadruplet coordination numbers, exactly four-->
+                    <!-- MQMZ: Quadruplet coordination numbers, exactly four -->
                     <optional>
                         <element name="Coordinations">
                             <list>
@@ -124,7 +129,7 @@
                             </list>
                         </element>
                     </optional>
-                    <!--MQMX: Excess exponents, exactly two (p and q)-->
+                    <!-- MQMX: Excess exponents, exactly two are relevant but four are stored (the first two are for cations, the second two for anions) -->
                     <optional>
                         <interleave>
                             <element name="MixingCode">
@@ -139,13 +144,15 @@
                                 <list>
                                     <data type="integer"/>
                                     <data type="integer"/>
+                                    <data type="integer"/>
+                                    <data type="integer"/>
                                 </list>
                             </element>
                             <optional>
                                 <interleave>
                                     <element name="AdditionalMixingConstituent">
                                         <attribute name="refid">
-                                        <data type="string"/>
+                                            <data type="string"/>
                                         </attribute>
                                     </element>
                                     <element name="AdditionalMixingExponent">
