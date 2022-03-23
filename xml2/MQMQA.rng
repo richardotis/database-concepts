@@ -100,7 +100,6 @@
                         <value>MQMX</value><a:documentation>Excess Gibbs energy for a quadruplet</a:documentation>
                     </choice>
                 </attribute>
-                <!-- TODO: can the different parameter types be part of the <choice> tag?" -->
                 <interleave>
                     <optional>
                         <text/>
@@ -109,28 +108,28 @@
                         <ref name="Interval"/>
                     </zeroOrMore>
                     <ref name="MQMConstituentArray"/>
-                    <!-- MQMG: Pair zetas and stoichiometry -->
-                    <optional>
-                        <element name="Zeta">
-                            <data type="float"/>
-                        </element>
-                        <element name="StoichiometricFactor">
-                            <data type="float"/>
-                        </element>
-                    </optional>
-                    <!-- MQMZ: Quadruplet coordination numbers, exactly four -->
-                    <optional>
-                        <element name="Coordinations">
-                            <list>
+                    <choice> <!-- TODO: can these choices be enforced to be linked to the Paramter.type attribute? -->
+                        <!-- MQMG: Pair zetas and stoichiometry -->
+                        <interleave>
+                            <element name="Zeta">
                                 <data type="float"/>
+                            </element>
+                            <element name="StoichiometricFactor">
                                 <data type="float"/>
-                                <data type="float"/>
-                                <data type="float"/>
-                            </list>
-                        </element>
-                    </optional>
-                    <!-- MQMX: Excess exponents, exactly two are relevant but four are stored (the first two are for cations, the second two for anions) -->
-                    <optional>
+                            </element>
+                        </interleave>
+                        <!-- MQMZ: Quadruplet coordination numbers, exactly four -->
+                        <interleave>
+                            <element name="Coordinations">
+                                <list>
+                                    <data type="float"/>
+                                    <data type="float"/>
+                                    <data type="float"/>
+                                    <data type="float"/>
+                                </list>
+                            </element>
+                        </interleave>
+                        <!-- MQMX: Excess exponents, exactly two are relevant but four are stored (the first two are for cations, the second two for anions) -->
                         <interleave>
                             <element name="MixingCode">
                                 <attribute name="type">
@@ -161,7 +160,7 @@
                                 </interleave>
                             </optional>
                         </interleave>
-                    </optional>
+                    </choice>
                 </interleave>
             </element>
         </zeroOrMore>

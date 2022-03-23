@@ -305,19 +305,21 @@ def write_xml(dbf, fd):
             subl_idx += 1
         if param['diffusing_species'] != v.Species(None):
             objectify.SubElement(param_node, "DiffusingSpecies", refid=str(param['diffusing_species']))
+        
         # Handle unique aspects of MQMQA parameters
         if param["parameter_type"] == "MQMG":
             objectify.SubElement(param_node, "Zeta")._setText(str(param["zeta"]))
             objectify.SubElement(param_node, "StoichiometricFactor")._setText(str(param["stoichiometry"][0]))
-        if param["parameter_type"] == "MQMZ":
+        elif param["parameter_type"] == "MQMZ":
             coordnations_node = objectify.SubElement(param_node, "Coordinations")
             coordnations_node._setText(" ".join(map(str, param["coordinations"])))
-        if param["parameter_type"] == "MQMX":
+        elif param["parameter_type"] == "MQMX":
             objectify.SubElement(param_node, "MixingCode", type=param["mixing_code"])
             objectify.SubElement(param_node, "Exponents")._setText(" ".join(map(str, param["exponents"])))
             if param["additional_mixing_constituent"] != v.Species(None):
                 objectify.SubElement(param_node, "AdditionalMixingConstituent", refid=str(param["additional_mixing_constituent"]))
                 objectify.SubElement(param_node, "AdditionalMixingExponent")._setText(str(param["additional_mixing_exponent"]))
+
         if param.get("parameter") is not None:            
             nodes = convert_symbolic_to_nodes(param['parameter'])
             for node in nodes:
