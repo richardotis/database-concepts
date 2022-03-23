@@ -114,8 +114,15 @@
                             <element name="Zeta">
                                 <data type="float"/>
                             </element>
-                            <element name="StoichiometricFactor">
-                                <data type="float"/>
+                            <element name="StoichiometricFactors">
+                            <!-- In the implementation, only the first one matters. -->
+                                <list>
+                                    <data type="float"/>
+                                    <data type="float"/>
+                                    <data type="float"/>
+                                    <data type="float"/>
+                                    <data type="float"/>
+                                </list>
                             </element>
                         </interleave>
                         <!-- MQMZ: Quadruplet coordination numbers, exactly four -->
