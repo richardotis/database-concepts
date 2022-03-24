@@ -1,15 +1,29 @@
+import pytest
 from pycalphad import Database, Model, calculate, variables as v
 from pycalphad.models.model_mqmqa import ModelMQMQA
 from pycalphad.tests.fixtures import select_database, load_database
 from pycalphad.tests.test_energy import check_energy
 import xml_parser
 
-@select_database("Shishin_Fe-Sb-O-S_slag.dat")
-def test_write_shishin_xml(load_database):
-    """Test writing a DAT file with an MQMQA model validates correctly when writing"""
-    dbf = load_database()
-    # If the database fails to validate, it should raise
-    dbf.to_string(fmt="xml")
+@pytest.mark.xfail(reason="SymEngine is incorrect in equality comparison for expressions")
+# e.g. these are not equal:
+# this Piecewise((4.0*U1ALNI, And(T < 6000.0, 298.15 <= T)), (0, True))
+# other Piecewise((U1ALNI*4.0, And(T < 6000.0, 298.15 <= T)), (0, True))
+@select_database("alni_dupin_2001.tdb")
+def test_tdb_to_xml_roundtrip(load_database):
+    """Test that a TDB can be round-tripped to/from XML and compare equal"""
+    dbf_tdb = load_database()
+    dbf_xml = Database.from_string(dbf_tdb.to_string(fmt="xml"), fmt="xml")
+    assert dbf_tdb == dbf_xml
+
+
+@select_database("alni_dupin_2001.tdb")
+def test_tdb_to_xml_to_xml_roundtrip(load_database):
+    """Test that an XML can be roundtripped to XML"""
+    dbf_tdb = load_database()
+    dbf_xml = Database.from_string(dbf_tdb.to_string(fmt="xml"), fmt="xml")
+    dbf_xml_2 = Database.from_string(dbf_xml.to_string(fmt="xml"), fmt="xml")
+    assert dbf_xml == dbf_xml_2
 
 
 @select_database("Shishin_Fe-Sb-O-S_slag.dat")
@@ -19,12 +33,12 @@ def test_MQMQA_xml_roundtrip_equality(load_database):
     dbf_xml = Database.from_string(dbf_dat.to_string(fmt="xml"), fmt="xml")
     assert dbf_dat == dbf_xml
 
+
 @select_database("Shishin_Fe-Sb-O-S_slag.dat")
 def test_MQMQA_xml2xml_roundtrip_equality(load_database):
     """Test that loading a DAT file with MQMQA model compares equal"""
     dbf_dat = load_database()
     dbf_xml = Database.from_string(dbf_dat.to_string(fmt="xml"), fmt="xml")
-    dbf_xml.to_string(fmt="xml")  # fails here
     dbf_xml_2 = Database.from_string(dbf_xml.to_string(fmt="xml"), fmt="xml")
     assert dbf_xml_2 == dbf_xml
 
