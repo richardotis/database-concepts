@@ -6,6 +6,11 @@ from lxml import etree, objectify
 import logging
 logger = logging.getLogger(__name__)
 
+# Workaround so this can be imported from other working directory.
+# We should use importlib.resources, etc. to package up and refer to schemas.
+from pathlib import Path
+this_dir = Path(__file__).parent
+
 
 def convert_math_to_symbolic(math_nodes):
     result = 0.0
@@ -224,7 +229,7 @@ def read_xml(dbf, fd):
     parser = etree.XMLParser(load_dtd=False,
                              no_network=True)
     tree = etree.parse(fd, parser=parser)
-    relaxng = etree.RelaxNG(etree.parse('database.rng'))
+    relaxng = etree.RelaxNG(etree.parse(this_dir / 'database.rng'))
     if not relaxng.validate(tree):
         logger.warn(relaxng.error_log)
     root = tree.getroot()
