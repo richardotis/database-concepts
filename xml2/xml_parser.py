@@ -355,7 +355,7 @@ def write_xml(dbf, fd):
             phase_nodes[phase_name] = objectify.SubElement(root, "Phase", id=str(phase_name))
         phase_node = phase_nodes[phase_name]
         param_node = objectify.SubElement(phase_node, "Parameter", type=str(param['parameter_type']))
-        if param.get("order") is not None:            
+        if param.get("parameter_order") is not None:     
             order_node = objectify.SubElement(param_node, "Order")
             order_node._setText(str(param['parameter_order']))
         # Constituent array
