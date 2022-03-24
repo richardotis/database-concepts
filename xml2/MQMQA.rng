@@ -143,6 +143,8 @@
                                     <choice>
                                         <value>G</value>
                                         <value>Q</value>
+                                        <value>B</value>
+                                        <value>R</value>
                                     </choice>
                                 </attribute>
                             </element>
