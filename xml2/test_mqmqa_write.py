@@ -11,6 +11,24 @@ def test_write_shishin_xml(load_database):
     # If the database fails to validate, it should raise
     dbf.to_string(fmt="xml")
 
+
+@select_database("Shishin_Fe-Sb-O-S_slag.dat")
+def test_MQMQA_xml_roundtrip_equality(load_database):
+    """Test that loading a DAT file with MQMQA model compares equal"""
+    dbf_dat = load_database()
+    dbf_xml = Database.from_string(dbf_dat.to_string(fmt="xml"), fmt="xml")
+    assert dbf_dat == dbf_xml
+
+@select_database("Shishin_Fe-Sb-O-S_slag.dat")
+def test_MQMQA_xml2xml_roundtrip_equality(load_database):
+    """Test that loading a DAT file with MQMQA model compares equal"""
+    dbf_dat = load_database()
+    dbf_xml = Database.from_string(dbf_dat.to_string(fmt="xml"), fmt="xml")
+    dbf_xml.to_string(fmt="xml")  # fails here
+    dbf_xml_2 = Database.from_string(dbf_xml.to_string(fmt="xml"), fmt="xml")
+    assert dbf_xml_2 == dbf_xml
+
+
 @select_database("Shishin_Fe-Sb-O-S_slag.dat")
 def test_xml_roundrip_MQMQA_SUBQ_Q_mixing(load_database):
     """Same test as test_MQMQA_SUBQ_Q_mixing_1000K_FACTSAGE, but using a database after roundtripping to XML"""
