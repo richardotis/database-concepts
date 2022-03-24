@@ -27,9 +27,9 @@ def test_tdb_to_xml_to_xml_roundtrip(load_database):
 
 
 # TODO: try to remove this simple test using repo-provided database - debugging other database is challenging
-def test_simple_QKTO_dat_to_xml_to_roundtrip():
+def test_FeTiVO_QKTO_dat_to_xml_to_roundtrip():
     """Test that a DAT with QKTO can be round-tripped to/from XML and compare equal"""
-    dbf_dat = Database("simple-qkto.dat")
+    dbf_dat = Database("FeTiVO.dat")
     dbf_xml = Database.from_string(dbf_dat.to_string(fmt="xml"), fmt="xml")
     # TODO: databases don't compare equal because of SymEngine stuff, test currently checks that the round trip is valid only
     # assert dbf_dat == dbf_xml
