@@ -90,6 +90,21 @@
                         <empty/>
                     </element>
                 </optional>
+                <optional>
+                    <element name="ChemicalGroups">
+                        <a:documentation>Mapping of species to integer chemical groups. Equal integers mean the species belong to the same group.</a:documentation>
+                        <oneOrMore>
+                            <element name="Constituent">
+                                <attribute name="groupid">
+                                    <data type="integer"/>
+                                </attribute>
+                                <attribute name="refid">
+                                    <data type="string"/>
+                                </attribute>
+                            </element>
+                        </oneOrMore>
+                    </element>
+                </optional>
             </interleave>
         </element>
         <zeroOrMore>
@@ -99,6 +114,7 @@
                         <!-- Gibbs energy parameters -->
                         <value>G</value><a:documentation>Gibbs parameters</a:documentation>
                         <value>L</value><a:documentation>Excess Gibbs energy</a:documentation>
+                        <value>QKT</value><a:documentation>Generalized Kohler-Toop polynomial</a:documentation>
                         <!-- Physical model parameters -->
                         <value>TC</value><a:documentation>Curie temperature</a:documentation>
                         <value>NT</value><a:documentation>Neel temperature</a:documentation>
@@ -133,9 +149,19 @@
                     </zeroOrMore>
                     <ref name="CEFConstituentArray"/>
                     <optional>
-                        <element name="Order">
-                            <data type="integer"/>
-                        </element>
+                        <choice>
+                            <a:documentation>Choice between Redlich-Kister interaction order ("Order") and Generalized Kohler-Toop polynomials ("Exponents")</a:documentation>
+                            <element name="Order">
+                                <data type="integer"/>
+                            </element>
+                            <element name="Exponents">
+                                <list>
+                                    <data type="float"/>
+                                    <data type="float"/>
+                                    <optional><data type="float"/></optional>
+                                </list>
+                            </element>
+                        </choice>
                     </optional>
                     <optional>
                         <element name="DiffusingSpecies">

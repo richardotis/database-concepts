@@ -148,6 +148,14 @@ def parse_model(dbf, phase_name, model_node, parameters):
                 sp = species_dict[constituent_node.attrib["refid"]]
                 chemical_groups_hint["anions"][sp] = int(constituent_node.attrib["groupid"])
         model_hints["mqmqa"]["chemical_groups"] = chemical_groups_hint
+    else:
+        # Non-MQMQA chemical groups
+        chemical_groups_node = _get_single_node(model_node.xpath('./ChemicalGroups'), allow_zero=True)
+        if chemical_groups_node is not None:
+            model_hints["chemical_groups"] = {}
+            for constituent_node in chemical_groups_node.xpath('./Constituent'):
+                sp = species_dict[constituent_node.attrib["refid"]]
+                model_hints["chemical_groups"][sp] = int(constituent_node.attrib["groupid"])
 
     dbf.add_structure_entry(phase_name, phase_name)
     dbf.add_phase(phase_name, model_hints, site_ratios)
@@ -158,11 +166,13 @@ def parse_model(dbf, phase_name, model_node, parameters):
         param_type = param_node.attrib['type']
 
         int_order, constituent_array = parse_cef_parameter(param_node)
-        if model_type == "MQMQA":
-            int_order = None  # special MQMQA handling. Needs to be explictly set to None because "order" is a required argument for add_parameter
-            constituent_array = [[str(c) for c in lx] for lx in constituent_array]  # No sorting
+        if (model_type in "MQMQA") or (param_type == "QKT"):
+            # Special MQMQA/QKTO handling, which do not have Redlich-Kister parameters.
+            # Redlich-Kister "order" has no meaning
+            int_order = None
+            # Parameters should not be sorted as the constituent order is related to particular exponents 
+            constituent_array = [[str(c) for c in lx] for lx in constituent_array]
         else:
-            # TODO: QKTO should not be sorted. Parameters are sensitive to sort order 
             constituent_array = [[str(c) for c in sorted(lx)] for lx in constituent_array]
         
         # Parameter value
@@ -197,6 +207,9 @@ def parse_model(dbf, phase_name, model_node, parameters):
             else:
                 param_data["additional_mixing_constituent"] = v.Species(None)
                 param_data["additional_mixing_exponent"] = 0  # Arbitrary
+        elif param_type == "QKT":
+            exponents_node = _get_single_node(param_node.xpath('./Exponents'))
+            param_data["exponents"] = list(map(float, exponents_node.text.split()))
 
         dbf.add_parameter(param_type, phase_name, constituent_array, int_order, function_obj, force_insert=False, **param_data)
 
@@ -340,6 +353,12 @@ def write_xml(dbf, fd):
                 if symmetry_node is not None:
                     raise ValueError('Multiple parameter symmetry options specified')
                 del model_hints['symmetry_BCC_4SL']
+            # ChemicalGroups
+            if "chemical_groups" in model_hints:
+                chemical_groups_node = objectify.SubElement(model_node, "ChemicalGroups")
+                for constituent, group_id in model_hints["chemical_groups"].items():
+                        objectify.SubElement(chemical_groups_node, "Constituent", refid=str(constituent), groupid=str(group_id))
+                del model_hints["chemical_groups"]
             # Simple phase options
             for possible_option in possible_options:
                 objectify.SubElement(model_node, phase_options[possible_option])
@@ -368,7 +387,6 @@ def write_xml(dbf, fd):
             subl_idx += 1
         if param['diffusing_species'] != v.Species(None):
             objectify.SubElement(param_node, "DiffusingSpecies", refid=str(param['diffusing_species']))
-        
         # Handle unique aspects of MQMQA parameters
         if param["parameter_type"] == "MQMG":
             objectify.SubElement(param_node, "Zeta")._setText(str(param["zeta"]))
@@ -382,6 +400,8 @@ def write_xml(dbf, fd):
             if param["additional_mixing_constituent"] != v.Species(None):
                 objectify.SubElement(param_node, "AdditionalMixingConstituent", refid=str(param["additional_mixing_constituent"]))
                 objectify.SubElement(param_node, "AdditionalMixingExponent")._setText(str(param["additional_mixing_exponent"]))
+        elif param["parameter_type"] == "QKT":
+            objectify.SubElement(param_node, "Exponents")._setText(" ".join(map(str, param["exponents"])))
 
         if param.get("parameter") is not None:            
             nodes = convert_symbolic_to_nodes(param['parameter'])
