@@ -26,13 +26,12 @@ def test_tdb_to_xml_to_xml_roundtrip(load_database):
     assert dbf_xml == dbf_xml_2
 
 
-# TODO: try to remove this simple test using repo-provided database - debugging other database is challenging
-def test_FeTiVO_QKTO_dat_to_xml_to_roundtrip():
+@select_database("Kaye_Pd-Ru-Tc-Mo.dat")
+def test_QKTO_dat_to_xml_to_roundtrip(load_database):
     """Test that a DAT with QKTO can be round-tripped to/from XML and compare equal"""
-    dbf_dat = Database("FeTiVO.dat")
+    dbf_dat = load_database()
     dbf_xml = Database.from_string(dbf_dat.to_string(fmt="xml"), fmt="xml")
-    # TODO: databases don't compare equal because of SymEngine stuff, test currently checks that the round trip is valid only
-    # assert dbf_dat == dbf_xml
+    assert dbf_dat == dbf_xml
 
 
 @select_database("Shishin_Fe-Sb-O-S_slag.dat")
