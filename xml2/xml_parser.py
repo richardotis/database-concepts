@@ -189,7 +189,8 @@ def parse_model(dbf, phase_name, model_node, parameters):
         elif param_type == "MQMX":
             param_data["mixing_code"] = _get_single_node(param_node.xpath('./MixingCode')).attrib["type"]
             exponents_node = _get_single_node(param_node.xpath('./Exponents'))
-            param_data["exponents"] = list(map(float, exponents_node.text.split()))
+            # Exponents assumed Int according to schema
+            param_data["exponents"] = list(map(int, exponents_node.text.split()))
             additional_mixing_constituent_refid = _get_single_node(param_node.xpath('./AdditionalMixingConstituent/@refid'), allow_zero=True)
             if additional_mixing_constituent_refid is not None:
                 param_data["additional_mixing_constituent"] = species_dict[str(additional_mixing_constituent_refid)]
