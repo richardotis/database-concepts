@@ -148,10 +148,11 @@
                             </element>
                             <element name="Exponents">
                                 <list>
-                                    <data type="integer"/>
-                                    <data type="integer"/>
-                                    <data type="integer"/>
-                                    <data type="integer"/>
+                                    <!-- Exponents should be integers by the ChemSage DAT spec, but our formulation is more flexible -->
+                                    <data type="float"/>
+                                    <data type="float"/>
+                                    <data type="float"/>
+                                    <data type="float"/>
                                 </list>
                             </element>
                             <optional>
@@ -162,7 +163,8 @@
                                         </attribute>
                                     </element>
                                     <element name="AdditionalMixingExponent">
-                                        <data type="integer"/>
+                                        <!-- Exponents should be integers by the ChemSage DAT spec, but our formulation is more flexible -->
+                                        <data type="float"/>
                                     </element>
                                 </interleave>
                             </optional>
