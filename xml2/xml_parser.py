@@ -267,7 +267,7 @@ def read_xml(dbf, fd):
     dbf.process_parameter_queue()
 
 
-def write_xml(dbf, fd):
+def write_xml(dbf, fd, require_valid=True):
     root = objectify.Element("Database", version=str(0))
     metadata = objectify.SubElement(root, "metadata")
     writer = objectify.SubElement(metadata, "writer")
@@ -420,9 +420,12 @@ def write_xml(dbf, fd):
     etree.cleanup_namespaces(root)
 
     # Validate
-    relaxng = etree.RelaxNG(etree.parse('database.rng'))
+    relaxng = etree.RelaxNG(etree.parse(this_dir / 'database.rng'))
     if not relaxng.validate(root):
-        raise ValueError("Failed to validate constructed database", relaxng.error_log)
+        if require_valid:
+            raise ValueError("Failed to validate constructed database", relaxng.error_log)
+        else:
+            logger.warning("Failed to validate constructed database:\n %s", str(relaxng.error_log))
 
     fd.write('<?xml version="1.0"?>\n')
     # XXX: href needs to be changed
