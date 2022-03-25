@@ -108,7 +108,7 @@
                         <ref name="Interval"/>
                     </zeroOrMore>
                     <ref name="MQMConstituentArray"/>
-                    <choice> <!-- TODO: can these choices be enforced to be linked to the Paramter.type attribute? -->
+                    <choice> <!-- TODO: can these choices be enforced to be linked to the Parameter.type attribute? -->
                         <!-- MQMG: Pair zetas and stoichiometry -->
                         <interleave>
                             <element name="Zeta">
